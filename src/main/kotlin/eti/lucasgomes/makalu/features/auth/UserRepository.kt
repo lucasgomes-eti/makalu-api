@@ -12,4 +12,8 @@ interface UserRepository : JpaRepository<UserEntity, Long>, UserDetailsService {
     override fun loadUserByUsername(username: String): MakaluUserDetails {
         return findByEmail(username)?.let { MakaluUserDetails(it) } ?: throw NotFoundException(AuthError.UserNotFound)
     }
+
+    fun existsByEmail(email: String): Boolean
+
+    fun existsByPhoneNumber(phoneNumber: String): Boolean
 }
