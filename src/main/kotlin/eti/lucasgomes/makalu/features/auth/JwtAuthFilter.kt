@@ -1,5 +1,7 @@
 package eti.lucasgomes.makalu.features.auth
 
+import eti.lucasgomes.makalu.features.auth.model.AuthError
+import eti.lucasgomes.makalu.shared.exceptions.AuthErrorException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -24,7 +26,7 @@ class JwtAuthFilter(
             if (jwtService.isAccessTokenValid(authHeader)) {
                 val userId = jwtService.getUserIdFromToken(authHeader)
                 val user = userRepository.findById(userId)
-                    .orElseThrow { IllegalArgumentException("Invalid token.") }
+                    .orElseThrow { AuthErrorException(AuthError.InvalidToken) }
                 val userDetails = MakaluUserDetails(user)
                 val auth = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
                 SecurityContextHolder.getContext().authentication = auth

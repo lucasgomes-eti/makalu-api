@@ -2,6 +2,8 @@ package eti.lucasgomes.makalu
 
 import eti.lucasgomes.makalu.features.auth.MakaluUserDetails
 import eti.lucasgomes.makalu.features.auth.model.UserEntity
+import eti.lucasgomes.makalu.shared.GlobalError
+import eti.lucasgomes.makalu.shared.exceptions.InternalErrorException
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -17,4 +19,4 @@ fun main(args: Array<String>) {
 
 val userEntity: UserEntity
     get() = (SecurityContextHolder.getContext().authentication?.principal as? MakaluUserDetails)?.userEntity
-        ?: throw IllegalStateException("User not authenticated.")
+        ?: throw InternalErrorException(GlobalError.UserNotAuthenticated)

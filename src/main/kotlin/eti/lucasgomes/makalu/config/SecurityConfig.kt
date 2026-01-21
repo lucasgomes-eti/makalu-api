@@ -1,5 +1,6 @@
 package eti.lucasgomes.makalu.config
 
+import eti.lucasgomes.makalu.features.auth.AuthErrorEntrypoint
 import eti.lucasgomes.makalu.features.auth.JwtAuthFilter
 import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
@@ -15,7 +16,8 @@ import org.springframework.security.web.util.matcher.DispatcherTypeRequestMatche
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val jwtAuthFilter: JwtAuthFilter
+    private val jwtAuthFilter: JwtAuthFilter,
+    private val authErrorEntrypoint: AuthErrorEntrypoint
 ) {
 
     @Bean
@@ -31,6 +33,7 @@ class SecurityConfig(
                 authorize(anyRequest, authenticated)
             }
             addFilterBefore<UsernamePasswordAuthenticationFilter>(jwtAuthFilter)
+            exceptionHandling { authenticationEntryPoint = authErrorEntrypoint }
         }
         return http.build()
     }
