@@ -1,8 +1,8 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class TokenPair(
+data class TokenPairResponse(
     @JsonProperty("access_token")
     val accessToken: String,
     @JsonProperty("refresh_token")

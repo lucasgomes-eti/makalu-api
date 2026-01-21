@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.utils
 
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter

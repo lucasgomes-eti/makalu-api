@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

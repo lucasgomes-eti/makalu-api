@@ -1,11 +1,11 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth.model
 
 import jakarta.persistence.*
 import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Entity(name = "users")
-data class User(
+data class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,

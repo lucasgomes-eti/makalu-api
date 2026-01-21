@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth
 
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component

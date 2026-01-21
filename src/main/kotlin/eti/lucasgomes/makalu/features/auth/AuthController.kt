@@ -1,5 +1,9 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth
 
+import eti.lucasgomes.makalu.features.auth.model.LoginRequest
+import eti.lucasgomes.makalu.features.auth.model.RefreshRequest
+import eti.lucasgomes.makalu.features.auth.model.RegisterRequest
+import eti.lucasgomes.makalu.features.auth.model.TokenPairResponse
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,22 +17,22 @@ class AuthController(
 
     @PostMapping("/register")
     fun register(
-        @RequestBody body: CreateAccountRequest
+        @RequestBody body: RegisterRequest
     ) {
         authService.register(body)
     }
 
     @PostMapping("/login")
     fun login(
-        @RequestBody body: AuthRequest
-    ): TokenPair {
+        @RequestBody body: LoginRequest
+    ): TokenPairResponse {
         return authService.login(body.email, body.password)
     }
 
     @PostMapping("/refresh")
     fun refresh(
         @RequestBody body: RefreshRequest
-    ): TokenPair {
+    ): TokenPairResponse {
         return authService.refresh(body.refreshToken)
     }
 }

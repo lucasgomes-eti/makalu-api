@@ -1,5 +1,9 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth
 
+import eti.lucasgomes.makalu.features.auth.model.RefreshTokenEntity
+import eti.lucasgomes.makalu.features.auth.model.RegisterRequest
+import eti.lucasgomes.makalu.features.auth.model.TokenPairResponse
+import eti.lucasgomes.makalu.features.auth.model.UserEntity
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,18 +20,18 @@ class AuthService(
     private val refreshTokenRepository: RefreshTokenRepository
 ) {
     @OptIn(ExperimentalTime::class)
-    fun register(createAccountRequest: CreateAccountRequest): User {
+    fun register(registerRequest: RegisterRequest): UserEntity {
         return userRepository.save(
-            User(
-                name = createAccountRequest.name,
-                email = createAccountRequest.email,
-                phoneNumber = createAccountRequest.phoneNumber,
-                passwordHash = hashEncoder.encode(createAccountRequest.password),
+            UserEntity(
+                name = registerRequest.name,
+                email = registerRequest.email,
+                phoneNumber = registerRequest.phoneNumber,
+                passwordHash = hashEncoder.encode(registerRequest.password),
             )
         )
     }
 
-    fun login(email: String, password: String): TokenPair {
+    fun login(email: String, password: String): TokenPairResponse {
         val user = userRepository.findByEmail(email) ?: throw BadCredentialsException("Invalid credentials.")
 
         if (hashEncoder.matches(password, user.passwordHash).not()) {
@@ -39,11 +43,11 @@ class AuthService(
 
         storeRefreshToken(user.id, newRefreshToken)
 
-        return TokenPair(newAccessToken, newRefreshToken)
+        return TokenPairResponse(newAccessToken, newRefreshToken)
     }
 
     @Transactional
-    fun refresh(refreshToken: String): TokenPair {
+    fun refresh(refreshToken: String): TokenPairResponse {
         if (jwtService.isRefreshTokenValid(refreshToken).not()) {
             throw IllegalArgumentException("Invalid refresh token.")
         }
@@ -68,7 +72,7 @@ class AuthService(
 
         storeRefreshToken(user.id, newRefreshToken)
 
-        return TokenPair(newAccessToken, newRefreshToken)
+        return TokenPairResponse(newAccessToken, newRefreshToken)
     }
 
     private fun storeRefreshToken(userId: Long, rawRefreshToken: String) {
@@ -77,7 +81,7 @@ class AuthService(
         val expiresAt = Instant.now().plusMillis(expiryMs)
 
         refreshTokenRepository.deleteByUserId(userId)
-        refreshTokenRepository.save(RefreshToken(userId = userId, hashedToken = hashed, expiresAt = expiresAt))
+        refreshTokenRepository.save(RefreshTokenEntity(userId = userId, hashedToken = hashed, expiresAt = expiresAt))
     }
 
     private fun hashToken(rawRefreshToken: String): String {

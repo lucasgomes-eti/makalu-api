@@ -1,5 +1,6 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.config
 
+import eti.lucasgomes.makalu.features.auth.JwtAuthFilter
 import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
