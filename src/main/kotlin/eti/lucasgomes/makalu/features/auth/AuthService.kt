@@ -7,25 +7,26 @@ import org.springframework.transaction.annotation.Transactional
 import java.security.MessageDigest
 import java.time.Instant
 import java.util.*
-import kotlin.time.ExperimentalTime
 
 @Service
 class AuthService(
     private val jwtService: JwtService,
     private val userRepository: UserRepository,
     private val hashEncoder: HashEncoder,
-    private val refreshTokenRepository: RefreshTokenRepository
+    private val refreshTokenRepository: RefreshTokenRepository,
+    private val registerMapper: RegisterMapper
 ) {
-    @OptIn(ExperimentalTime::class)
+
+    fun isEmailAvailable(email: String): Boolean {
+        return userRepository.existsByEmail(email).not()
+    }
+
+    fun isPhoneNumberAvailable(phoneNumber: String): Boolean {
+        return userRepository.existsByPhoneNumber(phoneNumber).not()
+    }
+
     fun register(registerRequest: RegisterRequest): UserEntity {
-        return userRepository.save(
-            UserEntity(
-                name = registerRequest.name,
-                email = registerRequest.email,
-                phoneNumber = registerRequest.phoneNumber,
-                passwordHash = hashEncoder.encode(registerRequest.password),
-            )
-        )
+        return userRepository.save(registerMapper.toEntity(registerRequest))
     }
 
     @Transactional
