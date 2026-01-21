@@ -17,6 +17,6 @@ fun main(args: Array<String>) {
     runApplication<MakaluApiApplication>(*args)
 }
 
-val userEntity: UserEntity
+val authenticatedUser: UserEntity
     get() = (SecurityContextHolder.getContext().authentication?.principal as? MakaluUserDetails)?.userEntity
         ?: throw InternalErrorException(GlobalError.UserNotAuthenticated)
