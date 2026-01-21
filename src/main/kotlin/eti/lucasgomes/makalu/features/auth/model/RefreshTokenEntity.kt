@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth.model
 
 import jakarta.persistence.*
 import java.time.Instant
@@ -7,7 +7,7 @@ import java.time.Instant
 @Table(
     indexes = [Index(columnList = "expiresAt", name = "idx_refresh_tokens_expires_at")]
 )
-data class RefreshToken(
+data class RefreshTokenEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,

@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.status
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

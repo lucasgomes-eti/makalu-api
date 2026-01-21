@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

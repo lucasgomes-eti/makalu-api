@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu
+package eti.lucasgomes.makalu.features.auth
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
