@@ -7,7 +7,7 @@ RUN gradle build --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build /app/build/libs/*.jar /app/app.jar
 EXPOSE 8080
 ARG PROFILE
 ENTRYPOINT ["java", "-jar", "app.jar --spring.profiles.active=$PROFILE"]
