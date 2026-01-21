@@ -1,5 +1,7 @@
 package eti.lucasgomes.makalu.features.auth
 
+import eti.lucasgomes.makalu.features.auth.model.AuthError
+import eti.lucasgomes.makalu.shared.exceptions.AuthErrorException
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -55,8 +57,8 @@ class JwtService(
     }
 
     fun getUserIdFromToken(token: String): Long {
-        val claims = parseAllClaims(token) ?: throw IllegalArgumentException("Invalid token.")
-        return claims.subject.toLongOrNull() ?: throw IllegalArgumentException("Invalid token.")
+        val claims = parseAllClaims(token) ?: throw AuthErrorException(AuthError.InvalidToken)
+        return claims.subject.toLongOrNull() ?: throw AuthErrorException(AuthError.InvalidToken)
     }
 
     private fun parseAllClaims(token: String): Claims? {

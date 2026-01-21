@@ -1,10 +1,7 @@
 package eti.lucasgomes.makalu.features.auth
 
-import eti.lucasgomes.makalu.features.auth.model.RefreshTokenEntity
-import eti.lucasgomes.makalu.features.auth.model.RegisterRequest
-import eti.lucasgomes.makalu.features.auth.model.TokenPairResponse
-import eti.lucasgomes.makalu.features.auth.model.UserEntity
-import org.springframework.security.authentication.BadCredentialsException
+import eti.lucasgomes.makalu.features.auth.model.*
+import eti.lucasgomes.makalu.shared.exceptions.AuthErrorException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.MessageDigest
@@ -31,11 +28,12 @@ class AuthService(
         )
     }
 
+    @Transactional
     fun login(email: String, password: String): TokenPairResponse {
-        val user = userRepository.findByEmail(email) ?: throw BadCredentialsException("Invalid credentials.")
+        val user = userRepository.findByEmail(email) ?: throw AuthErrorException(AuthError.InvalidCredentials)
 
         if (hashEncoder.matches(password, user.passwordHash).not()) {
-            throw BadCredentialsException("Invalid credentials.")
+            throw AuthErrorException(AuthError.InvalidCredentials)
         }
 
         val newAccessToken = jwtService.generateAccessToken(user.id.toString())
@@ -49,22 +47,22 @@ class AuthService(
     @Transactional
     fun refresh(refreshToken: String): TokenPairResponse {
         if (jwtService.isRefreshTokenValid(refreshToken).not()) {
-            throw IllegalArgumentException("Invalid refresh token.")
+            throw AuthErrorException(AuthError.InvalidRefreshToken)
         }
 
         val userId = jwtService.getUserIdFromToken(refreshToken)
-        val user = userRepository.findById(userId).orElseThrow { IllegalArgumentException("Invalid refresh token.") }
+        val user = userRepository.findById(userId).orElseThrow { AuthErrorException(AuthError.InvalidRefreshToken) }
 
         val hashed = hashToken(refreshToken)
 
         val stored = refreshTokenRepository.findByUserIdAndHashedToken(user.id, hashed)
-            ?: throw IllegalArgumentException("Refresh token not recognized (maybe used or expired?).")
+            ?: throw AuthErrorException(AuthError.RefreshTokenNotRecognized)
 
         refreshTokenRepository.deleteByUserIdAndHashedToken(user.id, hashed)
 
         // Should never happen as the TokenCleanupScheduler removes expired tokens.
         if (stored.expiresAt.isBefore(Instant.now())) {
-            throw IllegalArgumentException("Invalid refresh token.")
+            throw AuthErrorException(AuthError.InvalidRefreshToken)
         }
 
         val newAccessToken = jwtService.generateAccessToken(userId.toString())
