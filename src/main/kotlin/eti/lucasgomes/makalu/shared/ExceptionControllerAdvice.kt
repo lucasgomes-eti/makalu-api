@@ -5,6 +5,7 @@ import eti.lucasgomes.makalu.shared.exceptions.InternalErrorException
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 
@@ -54,5 +55,23 @@ class ExceptionControllerAdvice {
             fieldErrors = exception.mkError.fieldErrors
         )
         return ResponseEntity(error, HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleMethodArgumentNotValidException(
+        exception: MethodArgumentNotValidException,
+    ): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            httpCode = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+            message = GlobalError.InvalidRequestObject.message,
+            internalCode = GlobalError.InvalidRequestObject.code,
+            fieldErrors = exception.bindingResult.fieldErrors.map {
+                ErrorResponse.FieldError(
+                    it.field,
+                    it.defaultMessage ?: "Invalid"
+                )
+            }
+        )
+        return ResponseEntity(error, HttpStatus.UNPROCESSABLE_ENTITY)
     }
 }

@@ -8,4 +8,6 @@ object GlobalError {
         )
 
     data object UserNotAuthenticated : MakaluError("MK-002", "User not authenticated.")
+
+    data object InvalidRequestObject : MakaluError("MK-003", "Request object has validation errors.")
 }
