@@ -23,7 +23,8 @@ class RegisterMapper(
             name = name,
             email = email,
             phoneNumber = phoneNumber,
-            passwordHash = hashEncoder.encode(registerRequest.password)
+            passwordHash = hashEncoder.encode(registerRequest.password),
+            profileImageId = null
         )
     }
 }

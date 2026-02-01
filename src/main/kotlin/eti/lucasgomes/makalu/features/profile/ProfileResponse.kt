@@ -8,4 +8,6 @@ data class ProfileResponse(
     val email: String,
     @JsonProperty("phone_number")
     val phoneNumber: String,
+    @JsonProperty("profile_image_id")
+    val profileImageId: Long?
 )

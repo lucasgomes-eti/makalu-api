@@ -10,7 +10,8 @@ class ProfileMapper {
             id = id,
             name = name,
             email = email,
-            phoneNumber = phoneNumber
+            phoneNumber = phoneNumber,
+            profileImageId = profileImageId
         )
     }
 }

@@ -23,5 +23,8 @@ data class UserEntity(
     val passwordHash: String,
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: Instant = Clock.System.now()
+    val createdAt: Instant = Clock.System.now(),
+
+    @Column(name = "profile_image_id", nullable = true)
+    val profileImageId: Long?
 )

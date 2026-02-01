@@ -6,11 +6,13 @@ import eti.lucasgomes.makalu.shared.GlobalError
 import eti.lucasgomes.makalu.shared.exceptions.InternalErrorException
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.core.context.SecurityContextHolder
 
 @SpringBootApplication
 @EnableScheduling
+@EnableAsync
 class MakaluApiApplication
 
 fun main(args: Array<String>) {
