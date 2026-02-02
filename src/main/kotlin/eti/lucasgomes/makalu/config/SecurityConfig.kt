@@ -5,6 +5,7 @@ import eti.lucasgomes.makalu.features.auth.JwtAuthFilter
 import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
@@ -28,6 +29,7 @@ class SecurityConfig(
             authorizeHttpRequests {
                 authorize("/", permitAll)
                 authorize("/auth/**", permitAll)
+                authorize(method = HttpMethod.GET, pattern = "/profile/image/**", permitAll)
                 authorize(DispatcherTypeRequestMatcher(DispatcherType.ERROR), permitAll)
                 authorize(DispatcherTypeRequestMatcher(DispatcherType.FORWARD), permitAll)
                 authorize(anyRequest, authenticated)
