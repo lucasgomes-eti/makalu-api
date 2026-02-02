@@ -3,10 +3,10 @@ package eti.lucasgomes.makalu.features.profile
 import eti.lucasgomes.makalu.authenticatedUser
 import eti.lucasgomes.makalu.shared.imageUpload.ImageCategory
 import eti.lucasgomes.makalu.shared.imageUpload.ImageService
+import eti.lucasgomes.makalu.shared.imageUpload.ImageUploadResponse
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -26,11 +26,10 @@ class ProfileController(
     }
 
     @PostMapping("/upload-image")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun uploadImage(
         @RequestParam("file")
         file: MultipartFile
-    ) {
+    ): ImageUploadResponse {
         val imageMetadataEntity = imageService.uploadImage(
             file = file,
             ownerUserId = authenticatedUser.id,
@@ -38,6 +37,7 @@ class ProfileController(
             category = ImageCategory.PROFILE
         )
         applicationEventPublisher.publishEvent(UploadProfileImageEvent(this, imageMetadataEntity))
+        return ImageUploadResponse(imageMetadataEntity.id)
     }
 
     @GetMapping("/image/{imageId}")
