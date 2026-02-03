@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu.features.stores
+package eti.lucasgomes.makalu.features.stores.model
 
 import jakarta.persistence.*
 
