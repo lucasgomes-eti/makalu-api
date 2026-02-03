@@ -29,5 +29,6 @@ data class ImageMetadataEntity(
     val createdAt: Instant = Clock.System.now(),
 
     @Column(name = "category", nullable = false)
+    @Enumerated(EnumType.STRING)
     val category: ImageCategory
 )
