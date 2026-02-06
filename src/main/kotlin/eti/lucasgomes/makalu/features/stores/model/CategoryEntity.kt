@@ -1,6 +1,8 @@
 package eti.lucasgomes.makalu.features.stores.model
 
 import jakarta.persistence.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Entity(name = "categories")
 data class CategoryEntity(
@@ -10,4 +12,7 @@ data class CategoryEntity(
 
     @Column(nullable = false)
     val description: String,
+
+    @Column(name = "created_at", nullable = false)
+    val createdAt: Instant = Clock.System.now()
 )

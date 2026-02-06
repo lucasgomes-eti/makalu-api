@@ -14,4 +14,8 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
     fun findAll(): List<CategoryEntity> {
         return categoryRepository.findAll()
     }
+
+    fun findAllByIds(ids: List<Long>): List<CategoryEntity> {
+        return categoryRepository.findAllById(ids)
+    }
 }

@@ -1,6 +1,8 @@
 package eti.lucasgomes.makalu.features.stores.model
 
 import jakarta.persistence.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Entity(name = "stores")
 data class StoreEntity(
@@ -23,5 +25,8 @@ data class StoreEntity(
     val logoImageId: Long?,
 
     @Column(name = "cover_image_id", nullable = true)
-    val coverImageId: Long?
+    val coverImageId: Long?,
+
+    @Column(name = "created_at", nullable = false)
+    val createdAt: Instant = Clock.System.now()
 )
