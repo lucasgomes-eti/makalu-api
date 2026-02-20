@@ -9,12 +9,13 @@ import org.springframework.stereotype.Component
 @Component
 class StoreMapper(private val categoryService: CategoryService) {
 
-    fun toEntity(request: StoreRequest): StoreEntity = request.run {
+    fun toEntity(request: StoreRequest, ownerUserId: Long): StoreEntity = request.run {
         StoreEntity(
             name = name,
             categories = categoryService.findAllByIds(categoriesIds).toMutableList(),
             logoImageId = null,
-            coverImageId = null
+            coverImageId = null,
+            ownerUserId = ownerUserId
         )
     }
 

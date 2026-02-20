@@ -28,5 +28,8 @@ data class StoreEntity(
     val coverImageId: Long?,
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: Instant = Clock.System.now()
+    val createdAt: Instant = Clock.System.now(),
+
+    @Column(name = "owner_user_id", nullable = true)
+    val ownerUserId: Long,
 )

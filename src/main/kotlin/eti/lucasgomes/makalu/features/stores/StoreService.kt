@@ -10,8 +10,8 @@ class StoreService(
     private val storeMapper: StoreMapper,
 ) {
 
-    fun create(storeRequest: StoreRequest): StoreEntity {
-        return storeRepository.save(storeMapper.toEntity(storeRequest))
+    fun create(storeRequest: StoreRequest, ownerUserId: Long): StoreEntity {
+        return storeRepository.save(storeMapper.toEntity(storeRequest, ownerUserId))
     }
 
     fun findAll(): List<StoreEntity> {
