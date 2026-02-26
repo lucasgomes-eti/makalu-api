@@ -3,6 +3,7 @@ package eti.lucasgomes.makalu.features.stores
 import eti.lucasgomes.makalu.authenticatedUser
 import eti.lucasgomes.makalu.features.stores.model.StoreRequest
 import eti.lucasgomes.makalu.features.stores.model.StoreResponse
+import eti.lucasgomes.makalu.features.stores.model.UploadStoreCoverImageEvent
 import eti.lucasgomes.makalu.features.stores.model.UploadStoreLogoImageEvent
 import eti.lucasgomes.makalu.shared.imageUpload.ImageCategory
 import eti.lucasgomes.makalu.shared.imageUpload.ImageService
@@ -84,7 +85,7 @@ class StoreController(
             relativeDirectory = "store_images",
             category = ImageCategory.STORE_COVER
         )
-        applicationEventPublisher.publishEvent(UploadStoreLogoImageEvent(this, imageMetadataEntity, storeId))
+        applicationEventPublisher.publishEvent(UploadStoreCoverImageEvent(this, imageMetadataEntity, storeId))
         return ImageUploadResponse(imageMetadataEntity.id)
     }
 
