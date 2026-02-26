@@ -35,6 +35,8 @@ class SecurityConfig(
                 authorize("/", permitAll)
                 authorize("/auth/**", permitAll)
                 authorize(method = HttpMethod.GET, pattern = "/profile/image/**", permitAll)
+                authorize(method = HttpMethod.GET, pattern = "/stores/logo-image/**", permitAll)
+                authorize(method = HttpMethod.GET, pattern = "/stores/cover-image/**", permitAll)
                 authorize(DispatcherTypeRequestMatcher(DispatcherType.ERROR), permitAll)
                 authorize(DispatcherTypeRequestMatcher(DispatcherType.FORWARD), permitAll)
                 authorize(anyRequest, authenticated)

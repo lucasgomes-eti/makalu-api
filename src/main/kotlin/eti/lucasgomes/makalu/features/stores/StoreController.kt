@@ -39,7 +39,7 @@ class StoreController(
     }
 
     @PostMapping("/{storeId}/upload-logo-image")
-    fun uploadImage(
+    fun uploadLogoImage(
         @PathVariable("storeId")
         storeId: Long,
         @RequestParam("file")
@@ -56,7 +56,40 @@ class StoreController(
     }
 
     @GetMapping("/logo-image/{imageId}")
-    fun getImage(@PathVariable imageId: Long): ResponseEntity<Resource> {
+    fun getLogoImage(@PathVariable imageId: Long): ResponseEntity<Resource> {
+        val metadata = imageService.getImageMetadata(imageId)
+        val resource = imageService.getImageResource(imageId)
+
+        return ResponseEntity
+            .ok()
+            .header(
+                HttpHeaders.CONTENT_DISPOSITION,
+                """attachment; filename="${metadata.originalName}""""
+            )
+            .contentType(MediaType.parseMediaType(metadata.mimeType))
+            .contentLength(metadata.sizeInBytes)
+            .body(resource)
+    }
+
+    @PostMapping("/{storeId}/upload-cover-image")
+    fun uploadCoverImage(
+        @PathVariable("storeId")
+        storeId: Long,
+        @RequestParam("file")
+        file: MultipartFile
+    ): ImageUploadResponse {
+        val imageMetadataEntity = imageService.uploadImage(
+            file = file,
+            ownerUserId = authenticatedUser.id,
+            relativeDirectory = "store_images",
+            category = ImageCategory.STORE_COVER
+        )
+        applicationEventPublisher.publishEvent(UploadStoreLogoImageEvent(this, imageMetadataEntity, storeId))
+        return ImageUploadResponse(imageMetadataEntity.id)
+    }
+
+    @GetMapping("/cover-image/{imageId}")
+    fun getCoverImage(@PathVariable imageId: Long): ResponseEntity<Resource> {
         val metadata = imageService.getImageMetadata(imageId)
         val resource = imageService.getImageResource(imageId)
 
