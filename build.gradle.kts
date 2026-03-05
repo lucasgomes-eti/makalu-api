@@ -39,6 +39,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.locationtech.jts:jts-core:1.16.1")
+    implementation("org.hibernate.orm:hibernate-spatial:7.2.6.Final")
 }
 
 kotlin {

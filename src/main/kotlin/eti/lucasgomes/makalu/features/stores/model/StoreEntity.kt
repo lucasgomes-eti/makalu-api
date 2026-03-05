@@ -30,6 +30,6 @@ data class StoreEntity(
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Clock.System.now(),
 
-    @Column(name = "owner_user_id", nullable = true)
+    @Column(name = "owner_user_id", nullable = false)
     val ownerUserId: Long,
 )
