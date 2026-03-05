@@ -24,4 +24,13 @@ class AddressController(
     fun getSelfAddress(): AddressResponse {
         return addressMapper.toResponse(addressService.findByUser(authenticatedUser.id))
     }
+
+    @PutMapping("/{addressId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun update(
+        @PathVariable addressId: Long,
+        @Valid @RequestBody request: AddressRequest
+    ) {
+        addressService.update(request, authenticatedUser.id, addressId)
+    }
 }

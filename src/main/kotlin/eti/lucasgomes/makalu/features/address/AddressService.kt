@@ -17,4 +17,9 @@ class AddressService(
     fun findByUser(userId: Long): AddressEntity {
         return addressRepository.findByOwnerUserId(userId) ?: throw NotFoundException(AddressError.AddressNotFound)
     }
+
+    fun update(addressRequest: AddressRequest, ownerUserId: Long, addressId: Long) {
+        val entity = addressMapper.toEntity(addressRequest, ownerUserId, addressId)
+        addressRepository.save(entity)
+    }
 }

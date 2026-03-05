@@ -8,9 +8,10 @@ import org.springframework.stereotype.Component
 @Component
 class AddressMapper {
 
-    fun toEntity(request: AddressRequest, ownerUserId: Long): AddressEntity = request.run {
+    fun toEntity(request: AddressRequest, ownerUserId: Long, id: Long = 0): AddressEntity = request.run {
         val geometryFactory = GeometryFactory(PrecisionModel(), 4326)
         AddressEntity(
+            id = id,
             zipCode = zipCode,
             street = street,
             number = number,

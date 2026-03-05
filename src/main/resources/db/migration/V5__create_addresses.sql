@@ -15,7 +15,7 @@ CREATE TABLE addresses
     location      geometry(Point, 4326)                   NOT NULL,
     owner_user_id BIGINT                                  NOT NULL,
     created_at    TIMESTAMP WITHOUT TIME ZONE             NOT NULL,
-    CONSTRAINT pk_categories PRIMARY KEY (id)
+    CONSTRAINT pk_addresses PRIMARY KEY (id)
 );
 
 -- Create spatial index (important for performance)
