@@ -12,5 +12,6 @@ interface AddressRepository : JpaRepository<AddressEntity, Long> {
     )
     fun findWithinDistance(longitude: Double, latitude: Double, distanceInMeters: Double): List<AddressEntity>
 
+    @Query("SELECT * FROM addresses WHERE owner_user_id = ?1 LIMIT 1", nativeQuery = true)
     fun findByOwnerUserId(userId: Long): AddressEntity?
 }
