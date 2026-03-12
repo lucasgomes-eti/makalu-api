@@ -12,4 +12,7 @@ data class StoreRequest(
     @JsonProperty("categories_ids")
     @field:NotEmpty
     val categoriesIds: List<Long>,
+
+    val longitude: Double,
+    val latitude: Double
 )

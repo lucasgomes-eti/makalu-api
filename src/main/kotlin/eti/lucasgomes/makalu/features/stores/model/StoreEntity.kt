@@ -1,6 +1,7 @@
 package eti.lucasgomes.makalu.features.stores.model
 
 import jakarta.persistence.*
+import org.locationtech.jts.geom.Point
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -32,4 +33,7 @@ data class StoreEntity(
 
     @Column(name = "owner_user_id", nullable = false)
     val ownerUserId: Long,
+
+    @Column(nullable = false)
+    val location: Point,
 )

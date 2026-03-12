@@ -11,5 +11,8 @@ data class StoreResponse(
     val logoImageId: Long?,
 
     @JsonProperty("cover_image_id")
-    val coverImageId: Long?
+    val coverImageId: Long?,
+
+    val longitude: Double,
+    val latitude: Double
 )
