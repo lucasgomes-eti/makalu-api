@@ -39,6 +39,21 @@ class StoreController(
         return storeService.findAll().map { storeMapper.toResponse(it) }
     }
 
+    @PutMapping("/{storeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun update(
+        @Valid @RequestBody request: StoreRequest,
+        @PathVariable storeId: Long
+    ) {
+        storeService.update(request, authenticatedUser.id, storeId)
+    }
+
+    @DeleteMapping("/{storeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable storeId: Long) {
+        storeService.delete(storeId)
+    }
+
     @PostMapping("/{storeId}/upload-logo-image")
     fun uploadLogoImage(
         @PathVariable("storeId")

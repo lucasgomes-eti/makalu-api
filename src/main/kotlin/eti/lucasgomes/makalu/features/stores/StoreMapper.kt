@@ -9,8 +9,9 @@ import org.springframework.stereotype.Component
 @Component
 class StoreMapper(private val categoryService: CategoryService) {
 
-    fun toEntity(request: StoreRequest, ownerUserId: Long): StoreEntity = request.run {
+    fun toEntity(request: StoreRequest, ownerUserId: Long, storeId: Long = 0): StoreEntity = request.run {
         StoreEntity(
+            id = storeId,
             name = name,
             categories = categoryService.findAllByIds(categoriesIds).toMutableList(),
             logoImageId = null,

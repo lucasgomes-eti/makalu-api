@@ -17,4 +17,12 @@ class StoreService(
     fun findAll(): List<StoreEntity> {
         return storeRepository.findAll()
     }
+
+    fun update(storeRequest: StoreRequest, ownerUserId: Long, storeId: Long) {
+        storeRepository.save(storeMapper.toEntity(storeRequest, ownerUserId, storeId))
+    }
+
+    fun delete(storeId: Long) {
+        storeRepository.deleteById(storeId)
+    }
 }
