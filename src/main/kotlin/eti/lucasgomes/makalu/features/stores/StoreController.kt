@@ -39,6 +39,11 @@ class StoreController(
         return storeService.findAll().map { storeMapper.toResponse(it) }
     }
 
+    @GetMapping("/{storeId}")
+    fun findById(@PathVariable storeId: Long): StoreResponse {
+        return storeService.findById(storeId).let { storeMapper.toResponse(it) }
+    }
+
     @PutMapping("/{storeId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun update(
