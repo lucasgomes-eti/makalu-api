@@ -36,7 +36,7 @@ class StoreController(
 
     @GetMapping
     fun findAll(): List<StoreResponse> {
-        return storeService.findAll().map { storeMapper.toResponse(it) }
+        return storeService.findAll(authenticatedUser.id).map { storeMapper.toResponse(it) }
     }
 
     @GetMapping("/{storeId}")

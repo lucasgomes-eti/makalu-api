@@ -1,5 +1,6 @@
 package eti.lucasgomes.makalu.features.stores
 
+import eti.lucasgomes.makalu.features.address.AddressService
 import eti.lucasgomes.makalu.features.stores.model.StoreEntity
 import eti.lucasgomes.makalu.features.stores.model.StoreError
 import eti.lucasgomes.makalu.features.stores.model.StoreRequest
@@ -10,14 +11,16 @@ import org.springframework.stereotype.Service
 class StoreService(
     private val storeRepository: StoreRepository,
     private val storeMapper: StoreMapper,
+    private val addressService: AddressService
 ) {
 
     fun create(storeRequest: StoreRequest, ownerUserId: Long): StoreEntity {
         return storeRepository.save(storeMapper.toEntity(storeRequest, ownerUserId))
     }
 
-    fun findAll(): List<StoreEntity> {
-        return storeRepository.findAll()
+    fun findAll(currentUserId: Long): List<StoreEntity> {
+        val userAddress = addressService.findByUser(currentUserId)
+        return storeRepository.findWithinDistance(userAddress.location.x, userAddress.location.y, 10_000.0)
     }
 
     fun update(storeRequest: StoreRequest, ownerUserId: Long, storeId: Long) {
