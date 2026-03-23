@@ -35,8 +35,10 @@ class StoreController(
     }
 
     @GetMapping
-    fun findAll(): List<StoreResponse> {
-        return storeService.findInArea(authenticatedUser.id).map { storeMapper.toResponse(it) }
+    fun findAll(
+        @RequestParam categories: List<Long>? = null
+    ): List<StoreResponse> {
+        return storeService.findInArea(authenticatedUser.id, categories).map { storeMapper.toResponse(it) }
     }
 
     @GetMapping("/owned")

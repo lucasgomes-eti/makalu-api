@@ -18,9 +18,21 @@ class StoreService(
         return storeRepository.save(storeMapper.toEntity(storeRequest, ownerUserId))
     }
 
-    fun findInArea(currentUserId: Long): List<StoreEntity> {
+    fun findInArea(currentUserId: Long, categories: List<Long>? = null): List<StoreEntity> {
         val userAddress = addressService.findByUser(currentUserId)
-        return storeRepository.findWithinDistance(userAddress.location.x, userAddress.location.y, 10000.0)
+        if (categories != null) {
+            return storeRepository.findWithinDistanceByCategories(
+                longitude = userAddress.location.x,
+                latitude = userAddress.location.y,
+                distanceInMeters = STORE_SEARCH_AREA_IN_METERS,
+                categories = categories
+            )
+        }
+        return storeRepository.findWithinDistance(
+            longitude = userAddress.location.x,
+            latitude = userAddress.location.y,
+            distanceInMeters = STORE_SEARCH_AREA_IN_METERS
+        )
     }
 
     fun findByOwner(ownerUserId: Long): List<StoreEntity> {
@@ -37,5 +49,9 @@ class StoreService(
 
     fun findById(storeId: Long): StoreEntity {
         return storeRepository.findById(storeId).orElseThrow { NotFoundException(StoreError.StoreNotFound) }
+    }
+
+    companion object {
+        private const val STORE_SEARCH_AREA_IN_METERS = 10_000.0
     }
 }
