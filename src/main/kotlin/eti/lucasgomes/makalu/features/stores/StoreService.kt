@@ -18,9 +18,13 @@ class StoreService(
         return storeRepository.save(storeMapper.toEntity(storeRequest, ownerUserId))
     }
 
-    fun findAll(currentUserId: Long): List<StoreEntity> {
+    fun findInArea(currentUserId: Long): List<StoreEntity> {
         val userAddress = addressService.findByUser(currentUserId)
-        return storeRepository.findWithinDistance(userAddress.location.x, userAddress.location.y, 10_000.0)
+        return storeRepository.findWithinDistance(userAddress.location.x, userAddress.location.y, 10000.0)
+    }
+
+    fun findByOwner(ownerUserId: Long): List<StoreEntity> {
+        return storeRepository.findByOwnerUserId(ownerUserId)
     }
 
     fun update(storeRequest: StoreRequest, ownerUserId: Long, storeId: Long) {

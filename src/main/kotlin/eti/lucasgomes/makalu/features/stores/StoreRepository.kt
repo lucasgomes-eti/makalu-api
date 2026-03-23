@@ -10,4 +10,6 @@ interface StoreRepository : JpaRepository<StoreEntity, Long> {
         nativeQuery = true
     )
     fun findWithinDistance(longitude: Double, latitude: Double, distanceInMeters: Double): List<StoreEntity>
+
+    fun findByOwnerUserId(ownerUserId: Long): List<StoreEntity>
 }
