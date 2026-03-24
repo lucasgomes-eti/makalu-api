@@ -22,7 +22,7 @@ class StoreMapper(private val categoryService: CategoryService) {
             coverImageId = null,
             ownerUserId = ownerUserId,
             location = geometryFactory.createPoint(
-                Coordinate(longitude, latitude)
+                Coordinate(longitude!!, latitude!!)
             )
         )
     }

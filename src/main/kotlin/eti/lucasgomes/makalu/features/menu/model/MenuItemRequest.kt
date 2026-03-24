@@ -1,0 +1,34 @@
+package eti.lucasgomes.makalu.features.menu.model
+
+import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import java.math.BigDecimal
+
+data class MenuItemRequest(
+    @field:NotBlank
+    val name: String?,
+
+    @field:NotBlank
+    val category: String?,
+
+    @DecimalMin(value = "0.0", inclusive = false)
+    val price: BigDecimal?,
+
+    val ingredients: String?,
+
+    val configurations: List<Configuration>?
+) {
+    data class Configuration(
+        @field:NotBlank
+        val name: String?,
+
+        @field:NotNull
+        val type: Type?,
+
+        @field:NotNull
+        val options: List<String>?
+    ) {
+        enum class Type { SINGLE_CHOICE, MULTIPLE_CHOICE, QUANTITY }
+    }
+}
