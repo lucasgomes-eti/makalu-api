@@ -1,7 +1,9 @@
 package eti.lucasgomes.makalu.features.menu
 
+import eti.lucasgomes.makalu.features.menu.model.MenuError
 import eti.lucasgomes.makalu.features.menu.model.MenuItemEntity
 import eti.lucasgomes.makalu.features.menu.model.MenuItemRequest
+import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
 import org.springframework.stereotype.Service
 
 @Service
@@ -20,6 +22,10 @@ class MenuService(
 
     fun findByStoreId(storeId: Long): List<MenuItemEntity> {
         return repository.findAllByStoreId(storeId)
+    }
+
+    fun findById(storeId: Long, menuItemId: Long): MenuItemEntity {
+        return repository.findByStoreIdAndId(storeId, menuItemId) ?: throw NotFoundException(MenuError.MenuNotFound)
     }
 
     fun delete(id: Long) {

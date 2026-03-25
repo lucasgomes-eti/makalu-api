@@ -39,6 +39,14 @@ class MenuController(
         return menuService.findByStoreId(storeId).map { menuMapper.toResponse(it) }
     }
 
+    @GetMapping("/{storeId}/menu/{menuItemId}")
+    fun getById(
+        @PathVariable storeId: Long,
+        @PathVariable menuItemId: Long
+    ): MenuItemResponse {
+        return menuMapper.toResponse(menuService.findById(storeId = storeId, menuItemId = menuItemId))
+    }
+
     @DeleteMapping("/{storeId}/menu/{menuItemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
