@@ -8,15 +8,21 @@ import jakarta.validation.constraints.NotNull
 data class StoreRequest(
 
     @field:NotBlank
-    val name: String,
+    val name: String?,
 
     @JsonProperty("categories_ids")
     @field:NotEmpty
-    val categoriesIds: List<Long>,
+    val categoriesIds: List<Long>?,
 
     @field:NotNull
     val longitude: Double?,
 
     @field:NotNull
-    val latitude: Double?
+    val latitude: Double?,
+
+    @JsonProperty("logo_image_id")
+    val logoImageId: Long?,
+
+    @JsonProperty("cover_image_id")
+    val coverImageId: Long?,
 )

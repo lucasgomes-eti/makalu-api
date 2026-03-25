@@ -16,10 +16,10 @@ class StoreMapper(private val categoryService: CategoryService) {
         val geometryFactory = GeometryFactory(PrecisionModel(), 4326)
         StoreEntity(
             id = storeId,
-            name = name,
-            categories = categoryService.findAllByIds(categoriesIds).toMutableList(),
-            logoImageId = null,
-            coverImageId = null,
+            name = name!!,
+            categories = categoryService.findAllByIds(categoriesIds!!).toMutableList(),
+            logoImageId = logoImageId,
+            coverImageId = coverImageId,
             ownerUserId = ownerUserId,
             location = geometryFactory.createPoint(
                 Coordinate(longitude!!, latitude!!)
