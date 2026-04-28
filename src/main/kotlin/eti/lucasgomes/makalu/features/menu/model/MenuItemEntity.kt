@@ -36,6 +36,9 @@ data class MenuItemEntity(
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Clock.System.now(),
+
+    @Column(name = "image_id", nullable = true)
+    val imageId: Long?
 ) {
     data class Configuration(
         val name: String,

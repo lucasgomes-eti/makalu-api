@@ -26,7 +26,8 @@ class MenuMapper {
                     },
                     options = it.options!!
                 )
-            } ?: emptyList()
+            } ?: emptyList(),
+            imageId = null
         )
     }
 
@@ -48,7 +49,8 @@ class MenuMapper {
                     },
                     options = it.options
                 )
-            }
+            },
+            imageId = imageId
         )
     }
 }

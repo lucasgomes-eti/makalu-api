@@ -13,7 +13,10 @@ data class MenuItemResponse(
     val name: String,
     val price: BigDecimal,
     val ingredients: String?,
-    val configurations: List<Configuration>
+    val configurations: List<Configuration>,
+
+    @JsonProperty("image_id")
+    val imageId: Long?
 ) {
     data class Configuration(
         val name: String,
