@@ -23,7 +23,8 @@ class StoreMapper(private val categoryService: CategoryService) {
             ownerUserId = ownerUserId,
             location = geometryFactory.createPoint(
                 Coordinate(longitude!!, latitude!!)
-            )
+            ),
+            deliveryFee = request.deliveryFee!!
         )
     }
 
@@ -35,7 +36,8 @@ class StoreMapper(private val categoryService: CategoryService) {
             logoImageId = logoImageId,
             coverImageId = coverImageId,
             longitude = location.x,
-            latitude = location.y
+            latitude = location.y,
+            deliveryFee = deliveryFee
         )
     }
 }

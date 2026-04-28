@@ -1,6 +1,7 @@
 package eti.lucasgomes.makalu.features.stores.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import java.math.BigDecimal
 
 data class StoreResponse(
     val id: Long,
@@ -14,5 +15,8 @@ data class StoreResponse(
     val coverImageId: Long?,
 
     val longitude: Double,
-    val latitude: Double
+    val latitude: Double,
+
+    @JsonProperty("delivery_fee")
+    val deliveryFee: BigDecimal
 )

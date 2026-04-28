@@ -12,7 +12,8 @@ data class MenuItemRequest(
     @field:NotBlank
     val category: String?,
 
-    @DecimalMin(value = "0.0", inclusive = false)
+    @field:NotNull
+    @field:DecimalMin(value = "0.0", inclusive = false)
     val price: BigDecimal?,
 
     val ingredients: String?,

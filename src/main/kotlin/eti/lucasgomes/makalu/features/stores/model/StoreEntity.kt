@@ -2,6 +2,7 @@ package eti.lucasgomes.makalu.features.stores.model
 
 import jakarta.persistence.*
 import org.locationtech.jts.geom.Point
+import java.math.BigDecimal
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -36,4 +37,7 @@ data class StoreEntity(
 
     @Column(nullable = false)
     val location: Point,
+
+    @Column(name = "delivery_fee", nullable = false)
+    val deliveryFee: BigDecimal
 )
