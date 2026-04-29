@@ -83,7 +83,7 @@ class MenuController(
         return ImageUploadResponse(imageMetadataEntity.id)
     }
 
-    @GetMapping("/{storeId}/menu/{menuItemId}/image/{imageId}")
+    @GetMapping("/menu/{menuItemId}/image/{imageId}")
     fun getImage(@PathVariable imageId: Long): ResponseEntity<Resource> {
         val metadata = imageService.getImageMetadata(imageId)
         val resource = imageService.getImageResource(imageId)
