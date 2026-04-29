@@ -24,8 +24,8 @@ class MenuService(
         return repository.findAllByStoreId(storeId)
     }
 
-    fun findById(storeId: Long, menuItemId: Long): MenuItemEntity {
-        return repository.findByStoreIdAndId(storeId, menuItemId) ?: throw NotFoundException(MenuError.MenuNotFound)
+    fun findById(menuItemId: Long): MenuItemEntity {
+        return repository.findById(menuItemId).orElseThrow { NotFoundException(MenuError.MenuNotFound) }
     }
 
     fun delete(id: Long) {

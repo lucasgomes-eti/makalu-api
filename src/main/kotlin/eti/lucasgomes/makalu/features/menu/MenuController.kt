@@ -52,12 +52,11 @@ class MenuController(
         return menuService.findByStoreId(storeId).map { menuMapper.toResponse(it) }
     }
 
-    @GetMapping("/{storeId}/menu/{menuItemId}")
+    @GetMapping("/menu/{menuItemId}")
     fun getById(
-        @PathVariable storeId: Long,
         @PathVariable menuItemId: Long
     ): MenuItemResponse {
-        return menuMapper.toResponse(menuService.findById(storeId = storeId, menuItemId = menuItemId))
+        return menuMapper.toResponse(menuService.findById(menuItemId = menuItemId))
     }
 
     @DeleteMapping("/{storeId}/menu/{menuItemId}")
