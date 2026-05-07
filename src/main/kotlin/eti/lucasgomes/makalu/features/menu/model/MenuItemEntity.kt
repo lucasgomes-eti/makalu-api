@@ -43,8 +43,13 @@ data class MenuItemEntity(
     data class Configuration(
         val name: String,
         val type: Type,
-        val options: List<String>
+        val options: List<Option>
     ) {
         enum class Type { SINGLE_CHOICE, MULTIPLE_CHOICE, QUANTITY }
+
+        data class Option(
+            val name: String,
+            val additionalPrice: BigDecimal
+        )
     }
 }

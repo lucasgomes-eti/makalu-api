@@ -24,7 +24,12 @@ class MenuMapper {
                         MenuItemRequest.Configuration.Type.MULTIPLE_CHOICE -> MenuItemEntity.Configuration.Type.MULTIPLE_CHOICE
                         MenuItemRequest.Configuration.Type.QUANTITY -> MenuItemEntity.Configuration.Type.QUANTITY
                     },
-                    options = it.options!!
+                    options = it.options!!.map { option ->
+                        MenuItemEntity.Configuration.Option(
+                            name = option.name,
+                            additionalPrice = option.additionalPrice
+                        )
+                    }
                 )
             } ?: emptyList(),
             imageId = null
@@ -47,7 +52,12 @@ class MenuMapper {
                         MenuItemEntity.Configuration.Type.MULTIPLE_CHOICE -> MenuItemResponse.Configuration.Type.MULTIPLE_CHOICE
                         MenuItemEntity.Configuration.Type.QUANTITY -> MenuItemResponse.Configuration.Type.QUANTITY
                     },
-                    options = it.options
+                    options = it.options.map { option ->
+                        MenuItemResponse.Configuration.Option(
+                            name = option.name,
+                            additionalPrice = option.additionalPrice
+                        )
+                    }
                 )
             },
             imageId = imageId

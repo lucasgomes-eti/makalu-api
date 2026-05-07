@@ -28,8 +28,13 @@ data class MenuItemRequest(
         val type: Type?,
 
         @field:NotNull
-        val options: List<String>?
+        val options: List<Option>?
     ) {
         enum class Type { SINGLE_CHOICE, MULTIPLE_CHOICE, QUANTITY }
+
+        data class Option(
+            val name: String,
+            val additionalPrice: BigDecimal
+        )
     }
 }
