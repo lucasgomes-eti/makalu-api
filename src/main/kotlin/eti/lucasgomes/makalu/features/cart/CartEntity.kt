@@ -43,6 +43,9 @@ data class CartItemEntity(
     @JoinColumn(name = "menu_item_id")
     val menuItem: MenuItemEntity,
 
+    @Column(nullable = true, length = 240)
+    val notes: String? = null,
+
     @OneToMany(mappedBy = "cartItem", cascade = [CascadeType.ALL], orphanRemoval = true)
     val configurations: MutableList<CartItemConfigurationEntity> = mutableListOf()
 )

@@ -16,7 +16,8 @@ class CartMapper {
     ): CartItemEntity {
         val cartItem = CartItemEntity(
             cart = cart,
-            menuItem = menuItem
+            menuItem = menuItem,
+            notes = request.notes
         )
         request.configurations!!.forEach { configRequest ->
             cartItem.configurations.add(
