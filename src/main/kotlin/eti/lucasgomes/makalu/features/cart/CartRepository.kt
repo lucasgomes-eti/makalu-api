@@ -1,5 +1,6 @@
 package eti.lucasgomes.makalu.features.cart
 
+import eti.lucasgomes.makalu.features.cart.model.CartEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

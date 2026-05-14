@@ -2,6 +2,7 @@ package eti.lucasgomes.makalu.features.cart
 
 import eti.lucasgomes.makalu.authenticatedUser
 import eti.lucasgomes.makalu.features.cart.model.CartItemRequest
+import eti.lucasgomes.makalu.features.cart.model.CartResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -24,4 +25,8 @@ class CartController(private val cartService: CartService) {
             request = request
         )
     }
+
+    @GetMapping("/{storeId}/cart")
+    fun get(@PathVariable storeId: Long): CartResponse =
+        cartService.getCart(ownerId = authenticatedUser.id, storeId = storeId)
 }

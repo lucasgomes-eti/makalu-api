@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu.features.cart
+package eti.lucasgomes.makalu.features.cart.model
 
 import eti.lucasgomes.makalu.features.menu.model.MenuItemConfigurationOptionEntity
 import jakarta.persistence.*

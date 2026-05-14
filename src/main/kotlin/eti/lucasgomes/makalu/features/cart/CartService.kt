@@ -1,7 +1,10 @@
 package eti.lucasgomes.makalu.features.cart
 
+import eti.lucasgomes.makalu.features.address.AddressRepository
+import eti.lucasgomes.makalu.features.cart.model.CartEntity
 import eti.lucasgomes.makalu.features.cart.model.CartError
 import eti.lucasgomes.makalu.features.cart.model.CartItemRequest
+import eti.lucasgomes.makalu.features.cart.model.CartResponse
 import eti.lucasgomes.makalu.features.menu.MenuItemConfigurationOptionRepository
 import eti.lucasgomes.makalu.features.menu.MenuItemsRepository
 import eti.lucasgomes.makalu.features.stores.StoreRepository
@@ -16,8 +19,18 @@ class CartService(
     private val storeRepository: StoreRepository,
     private val menuItemsRepository: MenuItemsRepository,
     private val menuItemConfigurationOptionRepository: MenuItemConfigurationOptionRepository,
+    private val addressRepository: AddressRepository,
     private val cartMapper: CartMapper
 ) {
+
+    @Transactional(readOnly = true)
+    fun getCart(ownerId: Long, storeId: Long): CartResponse {
+        val store = storeRepository.findById(storeId)
+            .orElseThrow { NotFoundException(CartError.StoreNotFound) }
+        val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId)
+        val address = addressRepository.findByOwnerUserId(ownerId)
+        return cartMapper.toResponse(cart, store, address)
+    }
 
     @Transactional
     fun addItem(ownerId: Long, storeId: Long, menuItemId: Long, request: CartItemRequest) {
