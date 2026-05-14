@@ -3,9 +3,6 @@ package eti.lucasgomes.makalu.features.cart
 import eti.lucasgomes.makalu.features.menu.model.MenuItemEntity
 import eti.lucasgomes.makalu.features.stores.model.StoreEntity
 import jakarta.persistence.*
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
-import java.math.BigDecimal
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -36,7 +33,7 @@ data class CartEntity(
 data class CartItemEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long = 0,
 
     @ManyToOne
     @JoinColumn(name = "cart_id")
@@ -46,14 +43,6 @@ data class CartItemEntity(
     @JoinColumn(name = "menu_item_id")
     val menuItem: MenuItemEntity,
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Convert(converter = ConfigurationListConverter::class)
-    @Column(columnDefinition = "jsonb", nullable = false)
-    val configurations: List<Configuration>
-) {
-    data class Configuration(
-        val name: String,
-        val quantity: Int,
-        val price: BigDecimal
-    )
-}
+    @OneToMany(mappedBy = "cartItem", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val configurations: MutableList<CartItemConfigurationEntity> = mutableListOf()
+)

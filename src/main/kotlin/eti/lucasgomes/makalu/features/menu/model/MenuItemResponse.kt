@@ -19,6 +19,7 @@ data class MenuItemResponse(
     val imageId: Long?
 ) {
     data class Configuration(
+        val id: Long,
         val name: String,
         val type: Type,
         val options: List<Option>
@@ -26,7 +27,10 @@ data class MenuItemResponse(
         enum class Type { SINGLE_CHOICE, MULTIPLE_CHOICE, QUANTITY }
 
         data class Option(
+            val id: Long,
             val name: String,
+
+            @JsonProperty("additional_price")
             val additionalPrice: BigDecimal
         )
     }

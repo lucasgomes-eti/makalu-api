@@ -2,6 +2,7 @@ package eti.lucasgomes.makalu.features.cart
 
 import eti.lucasgomes.makalu.features.cart.model.CartError
 import eti.lucasgomes.makalu.features.cart.model.CartItemRequest
+import eti.lucasgomes.makalu.features.menu.MenuItemConfigurationOptionRepository
 import eti.lucasgomes.makalu.features.menu.MenuItemsRepository
 import eti.lucasgomes.makalu.features.stores.StoreRepository
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
@@ -14,6 +15,7 @@ class CartService(
     private val cartItemRepository: CartItemRepository,
     private val storeRepository: StoreRepository,
     private val menuItemsRepository: MenuItemsRepository,
+    private val menuItemConfigurationOptionRepository: MenuItemConfigurationOptionRepository,
     private val cartMapper: CartMapper
 ) {
 
@@ -23,6 +25,19 @@ class CartService(
             .orElseThrow { NotFoundException(CartError.StoreNotFound) }
         val menuItem = menuItemsRepository.findById(menuItemId)
             .orElseThrow { NotFoundException(CartError.MenuItemNotFound) }
+
+        val requestedOptionIds = request.configurations!!.map { it.menuItemConfigurationOptionId!! }
+        val optionsById = if (requestedOptionIds.isEmpty()) {
+            emptyMap()
+        } else {
+            val found = menuItemConfigurationOptionRepository
+                .findAllByIdInAndConfigurationMenuItemId(requestedOptionIds, menuItemId)
+            if (found.size != requestedOptionIds.toSet().size) {
+                throw NotFoundException(CartError.ConfigurationOptionNotFound)
+            }
+            found.associateBy { it.id }
+        }
+
         val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId)
             ?: cartRepository.save(
                 CartEntity(
@@ -32,6 +47,6 @@ class CartService(
                     items = emptyList()
                 )
             )
-        cartItemRepository.save(cartMapper.toEntity(request, cart, menuItem))
+        cartItemRepository.save(cartMapper.toEntity(request, cart, menuItem, optionsById))
     }
 }

@@ -1,5 +1,6 @@
 package eti.lucasgomes.makalu.features.menu.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -33,8 +34,13 @@ data class MenuItemRequest(
         enum class Type { SINGLE_CHOICE, MULTIPLE_CHOICE, QUANTITY }
 
         data class Option(
-            val name: String,
-            val additionalPrice: BigDecimal
+            @field:NotBlank
+            val name: String?,
+
+            @JsonProperty("additional_price")
+            @field:NotNull
+            @field:DecimalMin(value = "0.0", inclusive = false)
+            val additionalPrice: BigDecimal?
         )
     }
 }

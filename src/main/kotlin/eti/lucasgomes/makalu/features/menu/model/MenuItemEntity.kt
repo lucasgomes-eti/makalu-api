@@ -1,9 +1,6 @@
 package eti.lucasgomes.makalu.features.menu.model
 
-import eti.lucasgomes.makalu.features.menu.ConfigurationListConverter
 import jakarta.persistence.*
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
 import java.math.BigDecimal
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -29,27 +26,12 @@ data class MenuItemEntity(
     @Column(nullable = true)
     val ingredients: String?,
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Convert(converter = ConfigurationListConverter::class)
-    @Column(columnDefinition = "jsonb", nullable = false)
-    val configurations: List<Configuration>,
+    @OneToMany(mappedBy = "menuItem", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val configurations: MutableList<MenuItemConfigurationEntity> = mutableListOf(),
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Clock.System.now(),
 
     @Column(name = "image_id", nullable = true)
     val imageId: Long?
-) {
-    data class Configuration(
-        val name: String,
-        val type: Type,
-        val options: List<Option>
-    ) {
-        enum class Type { SINGLE_CHOICE, MULTIPLE_CHOICE, QUANTITY }
-
-        data class Option(
-            val name: String,
-            val additionalPrice: BigDecimal
-        )
-    }
-}
+)
