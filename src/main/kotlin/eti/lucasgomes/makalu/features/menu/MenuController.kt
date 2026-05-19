@@ -9,11 +9,7 @@ import eti.lucasgomes.makalu.shared.imageUpload.ImageService
 import eti.lucasgomes.makalu.shared.imageUpload.ImageUploadResponse
 import jakarta.validation.Valid
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.core.io.Resource
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -81,21 +77,5 @@ class MenuController(
         )
         applicationEventPublisher.publishEvent(UploadMenuImageEvent(this, imageMetadataEntity, storeId, menuItemId))
         return ImageUploadResponse(imageMetadataEntity.id)
-    }
-
-    @GetMapping("/menu/{menuItemId}/image/{imageId}")
-    fun getImage(@PathVariable imageId: Long): ResponseEntity<Resource> {
-        val metadata = imageService.getImageMetadata(imageId)
-        val resource = imageService.getImageResource(imageId)
-
-        return ResponseEntity
-            .ok()
-            .header(
-                HttpHeaders.CONTENT_DISPOSITION,
-                """attachment; filename="${metadata.originalName}""""
-            )
-            .contentType(MediaType.parseMediaType(metadata.mimeType))
-            .contentLength(metadata.sizeInBytes)
-            .body(resource)
     }
 }

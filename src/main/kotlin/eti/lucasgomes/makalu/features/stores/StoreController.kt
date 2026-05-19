@@ -10,11 +10,7 @@ import eti.lucasgomes.makalu.shared.imageUpload.ImageService
 import eti.lucasgomes.makalu.shared.imageUpload.ImageUploadResponse
 import jakarta.validation.Valid
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.core.io.Resource
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -83,22 +79,6 @@ class StoreController(
         return ImageUploadResponse(imageMetadataEntity.id)
     }
 
-    @GetMapping("/logo-image/{imageId}")
-    fun getLogoImage(@PathVariable imageId: Long): ResponseEntity<Resource> {
-        val metadata = imageService.getImageMetadata(imageId)
-        val resource = imageService.getImageResource(imageId)
-
-        return ResponseEntity
-            .ok()
-            .header(
-                HttpHeaders.CONTENT_DISPOSITION,
-                """attachment; filename="${metadata.originalName}""""
-            )
-            .contentType(MediaType.parseMediaType(metadata.mimeType))
-            .contentLength(metadata.sizeInBytes)
-            .body(resource)
-    }
-
     @PostMapping("/{storeId}/upload-cover-image")
     fun uploadCoverImage(
         @PathVariable("storeId")
@@ -114,21 +94,5 @@ class StoreController(
         )
         applicationEventPublisher.publishEvent(UploadStoreCoverImageEvent(this, imageMetadataEntity, storeId))
         return ImageUploadResponse(imageMetadataEntity.id)
-    }
-
-    @GetMapping("/cover-image/{imageId}")
-    fun getCoverImage(@PathVariable imageId: Long): ResponseEntity<Resource> {
-        val metadata = imageService.getImageMetadata(imageId)
-        val resource = imageService.getImageResource(imageId)
-
-        return ResponseEntity
-            .ok()
-            .header(
-                HttpHeaders.CONTENT_DISPOSITION,
-                """attachment; filename="${metadata.originalName}""""
-            )
-            .contentType(MediaType.parseMediaType(metadata.mimeType))
-            .contentLength(metadata.sizeInBytes)
-            .body(resource)
     }
 }
