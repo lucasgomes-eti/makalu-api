@@ -29,4 +29,17 @@ class CartController(private val cartService: CartService) {
     @GetMapping("/{storeId}/cart")
     fun get(@PathVariable storeId: Long): CartResponse =
         cartService.getCart(ownerId = authenticatedUser.id, storeId = storeId)
+
+    @DeleteMapping("/{storeId}/cart/items/{cartItemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun removeItem(
+        @PathVariable storeId: Long,
+        @PathVariable cartItemId: Long
+    ) {
+        cartService.removeItem(
+            ownerId = authenticatedUser.id,
+            storeId = storeId,
+            cartItemId = cartItemId
+        )
+    }
 }

@@ -62,4 +62,14 @@ class CartService(
             )
         cartItemRepository.save(cartMapper.toEntity(request, cart, menuItem, optionsById))
     }
+
+    @Transactional
+    fun removeItem(ownerId: Long, storeId: Long, cartItemId: Long) {
+        val item = cartItemRepository.findById(cartItemId)
+            .orElseThrow { NotFoundException(CartError.CartItemNotFound) }
+        if (item.cart.ownerId != ownerId || item.cart.store.id != storeId) {
+            throw NotFoundException(CartError.CartItemNotFound)
+        }
+        cartItemRepository.delete(item)
+    }
 }
