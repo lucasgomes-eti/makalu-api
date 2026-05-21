@@ -72,4 +72,10 @@ class CartService(
         }
         cartItemRepository.delete(item)
     }
+
+    @Transactional
+    fun clearCart(ownerId: Long, storeId: Long) {
+        val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId) ?: return
+        cartItemRepository.deleteAllByCartId(cart.id)
+    }
 }

@@ -42,4 +42,10 @@ class CartController(private val cartService: CartService) {
             cartItemId = cartItemId
         )
     }
+
+    @DeleteMapping("/{storeId}/cart/items")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun clearCart(@PathVariable storeId: Long) {
+        cartService.clearCart(ownerId = authenticatedUser.id, storeId = storeId)
+    }
 }
