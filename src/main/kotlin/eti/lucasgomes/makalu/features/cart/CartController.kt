@@ -31,17 +31,14 @@ class CartController(private val cartService: CartService) {
         cartService.getCart(ownerId = authenticatedUser.id, storeId = storeId)
 
     @DeleteMapping("/{storeId}/cart/items/{cartItemId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun removeItem(
         @PathVariable storeId: Long,
         @PathVariable cartItemId: Long
-    ) {
-        cartService.removeItem(
-            ownerId = authenticatedUser.id,
-            storeId = storeId,
-            cartItemId = cartItemId
-        )
-    }
+    ): CartResponse = cartService.removeItem(
+        ownerId = authenticatedUser.id,
+        storeId = storeId,
+        cartItemId = cartItemId
+    )
 
     @DeleteMapping("/{storeId}/cart/items")
     @ResponseStatus(HttpStatus.NO_CONTENT)

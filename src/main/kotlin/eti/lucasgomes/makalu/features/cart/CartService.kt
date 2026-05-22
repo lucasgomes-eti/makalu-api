@@ -64,13 +64,19 @@ class CartService(
     }
 
     @Transactional
-    fun removeItem(ownerId: Long, storeId: Long, cartItemId: Long) {
+    fun removeItem(ownerId: Long, storeId: Long, cartItemId: Long): CartResponse {
         val item = cartItemRepository.findById(cartItemId)
             .orElseThrow { NotFoundException(CartError.CartItemNotFound) }
         if (item.cart.ownerId != ownerId || item.cart.store.id != storeId) {
             throw NotFoundException(CartError.CartItemNotFound)
         }
         cartItemRepository.delete(item)
+
+        val store = storeRepository.findById(storeId)
+            .orElseThrow { NotFoundException(CartError.StoreNotFound) }
+        val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId)
+        val address = addressRepository.findByOwnerUserId(ownerId)
+        return cartMapper.toResponse(cart, store, address)
     }
 
     @Transactional
