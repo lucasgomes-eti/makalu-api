@@ -27,4 +27,3 @@ data class CartEntity(
     @Column(name = "updated_at", nullable = false)
     val updatedAt: Instant = Clock.System.now()
 )
-

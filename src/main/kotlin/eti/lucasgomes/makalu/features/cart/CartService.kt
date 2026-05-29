@@ -11,6 +11,7 @@ import eti.lucasgomes.makalu.features.stores.StoreRepository
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.time.Clock
 
 @Service
 class CartService(
@@ -61,6 +62,7 @@ class CartService(
                 )
             )
         cartItemRepository.save(cartMapper.toEntity(request, cart, menuItem, optionsById))
+        cartRepository.save(cart.copy(updatedAt = Clock.System.now()))
     }
 
     @Transactional
@@ -75,6 +77,9 @@ class CartService(
         val store = storeRepository.findById(storeId)
             .orElseThrow { NotFoundException(CartError.StoreNotFound) }
         val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId)
+        cart?.let {
+            cartRepository.save(it.copy(updatedAt = Clock.System.now()))
+        }
         val address = addressRepository.findByOwnerUserId(ownerId)
         return cartMapper.toResponse(cart, store, address)
     }
@@ -83,5 +88,6 @@ class CartService(
     fun clearCart(ownerId: Long, storeId: Long) {
         val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId) ?: return
         cartItemRepository.deleteAllByCartId(cart.id)
+        cartRepository.save(cart.copy(updatedAt = Clock.System.now()))
     }
 }
