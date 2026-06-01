@@ -18,7 +18,7 @@ data class CartEntity(
     @JoinColumn(name = "store_id")
     val store: StoreEntity,
 
-    @OneToMany(mappedBy = "cart")
+    @OneToMany(mappedBy = "cart", cascade = [CascadeType.ALL], orphanRemoval = true)
     val items: List<CartItemEntity>,
 
     @Column(name = "created_at", nullable = false)

@@ -37,7 +37,7 @@ data class OrderEntity(
     val status: OrderStatus,
 
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val items: List<OrderItemEntity>,
+    val items: MutableList<OrderItemEntity> = mutableListOf(),
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Clock.System.now(),
@@ -86,7 +86,7 @@ data class OrderItemEntity(
     val imageId: Long?,
 
     @OneToMany(mappedBy = "orderItem", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val configurations: List<OrderItemConfigurationEntity>
+    val configurations: MutableList<OrderItemConfigurationEntity> = mutableListOf()
 )
 
 @Entity(name = "order_item_configurations")
@@ -103,7 +103,7 @@ data class OrderItemConfigurationEntity(
     val name: String,
 
     @OneToMany(mappedBy = "configuration", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val options: List<OrderItemConfigurationOptionEntity>
+    val options: MutableList<OrderItemConfigurationOptionEntity> = mutableListOf()
 )
 
 @Entity(name = "order_item_configuration_options")
