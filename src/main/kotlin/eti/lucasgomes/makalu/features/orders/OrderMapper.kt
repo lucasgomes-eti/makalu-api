@@ -3,6 +3,7 @@ package eti.lucasgomes.makalu.features.orders
 import eti.lucasgomes.makalu.features.address.AddressEntity
 import eti.lucasgomes.makalu.features.cart.model.CartEntity
 import eti.lucasgomes.makalu.features.cart.model.CartItemEntity
+import eti.lucasgomes.makalu.features.orders.model.*
 import eti.lucasgomes.makalu.features.stores.model.StoreEntity
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
@@ -20,6 +21,7 @@ class OrderMapper {
         val order = OrderEntity(
             userId = cart.ownerId,
             storeId = store.id,
+            storeName = store.name,
             cartId = cart.id,
             deliveryAddressId = address.id,
             deliveryAddressLine = buildAddressLine(address),
@@ -70,6 +72,7 @@ class OrderMapper {
         OrderResponse(
             id = order.id,
             status = order.status,
+            storeName = order.storeName,
             deliveryAddressLine = order.deliveryAddressLine,
             items = order.items.map { toItemResponse(it) },
             total = OrderResponse.Total(

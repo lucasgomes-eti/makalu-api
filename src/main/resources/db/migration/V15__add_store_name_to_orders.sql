@@ -1,0 +1,2 @@
+ALTER TABLE orders
+    ADD COLUMN store_name VARCHAR(255) NOT NULL;

@@ -1,11 +1,15 @@
 package eti.lucasgomes.makalu.features.orders
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import eti.lucasgomes.makalu.features.orders.model.OrderStatus
 import java.math.BigDecimal
 
 data class OrderResponse(
     val id: Long,
     val status: OrderStatus,
+
+    @JsonProperty("store_name")
+    val storeName: String,
 
     @JsonProperty("delivery_address_line")
     val deliveryAddressLine: String,
