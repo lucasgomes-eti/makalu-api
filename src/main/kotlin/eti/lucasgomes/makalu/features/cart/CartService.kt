@@ -28,7 +28,8 @@ class CartService(
     fun getCart(ownerId: Long, storeId: Long): CartResponse {
         val store = storeRepository.findById(storeId)
             .orElseThrow { NotFoundException(CartError.StoreNotFound) }
-        val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId)
+        val cart =
+            cartRepository.findByOwnerIdAndStoreId(ownerId, storeId) ?: throw NotFoundException(CartError.CartNotFound)
         val address = addressRepository.findByOwnerUserId(ownerId)
         return cartMapper.toResponse(cart, store, address)
     }
@@ -76,10 +77,9 @@ class CartService(
 
         val store = storeRepository.findById(storeId)
             .orElseThrow { NotFoundException(CartError.StoreNotFound) }
-        val cart = cartRepository.findByOwnerIdAndStoreId(ownerId, storeId)
-        cart?.let {
-            cartRepository.save(it.copy(updatedAt = Clock.System.now()))
-        }
+        val cart =
+            cartRepository.findByOwnerIdAndStoreId(ownerId, storeId) ?: throw NotFoundException(CartError.CartNotFound)
+        cartRepository.save(cart.copy(updatedAt = Clock.System.now()))
         val address = addressRepository.findByOwnerUserId(ownerId)
         return cartMapper.toResponse(cart, store, address)
     }

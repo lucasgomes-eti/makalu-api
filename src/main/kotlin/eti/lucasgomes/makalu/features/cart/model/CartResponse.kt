@@ -4,8 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import java.math.BigDecimal
 
 data class CartResponse(
+    val id: Long,
+
     @JsonProperty("delivery_address_line")
     val deliveryAddressLine: String?,
+
     val items: List<CartItemResponse>,
     val total: Total
 ) {

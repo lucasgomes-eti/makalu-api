@@ -1,11 +1,7 @@
 package eti.lucasgomes.makalu.features.cart
 
 import eti.lucasgomes.makalu.features.address.AddressEntity
-import eti.lucasgomes.makalu.features.cart.model.CartEntity
-import eti.lucasgomes.makalu.features.cart.model.CartItemConfigurationEntity
-import eti.lucasgomes.makalu.features.cart.model.CartItemEntity
-import eti.lucasgomes.makalu.features.cart.model.CartItemRequest
-import eti.lucasgomes.makalu.features.cart.model.CartResponse
+import eti.lucasgomes.makalu.features.cart.model.*
 import eti.lucasgomes.makalu.features.menu.model.MenuItemConfigurationOptionEntity
 import eti.lucasgomes.makalu.features.menu.model.MenuItemEntity
 import eti.lucasgomes.makalu.features.stores.model.StoreEntity
@@ -39,13 +35,14 @@ class CartMapper {
     }
 
     fun toResponse(
-        cart: CartEntity?,
+        cart: CartEntity,
         store: StoreEntity,
         address: AddressEntity?
     ): CartResponse {
-        val items = cart?.items.orEmpty().map { toItemResponse(it) }
+        val items = cart.items.map { toItemResponse(it) }
         val itemsTotal = items.fold(BigDecimal.ZERO) { acc, item -> acc + item.price }
         return CartResponse(
+            id = cart.id,
             deliveryAddressLine = address?.let { buildAddressLine(it) },
             items = items,
             total = CartResponse.Total(

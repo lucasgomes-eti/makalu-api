@@ -7,4 +7,5 @@ object CartError {
     data object MenuItemNotFound : MakaluError("MK-602", "Menu item not found")
     data object ConfigurationOptionNotFound : MakaluError("MK-603", "Configuration option not found")
     data object CartItemNotFound : MakaluError("MK-604", "Cart item not found")
+    data object CartNotFound : MakaluError("MK-605", "Cart not found")
 }
