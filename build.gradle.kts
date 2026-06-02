@@ -41,6 +41,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.locationtech.jts:jts-core:1.16.1")
     implementation("org.hibernate.orm:hibernate-spatial:7.2.6.Final")
+    implementation("io.github.mysto:ff3:1.0")
 }
 
 kotlin {

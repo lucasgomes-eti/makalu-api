@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
 @Component
-class OrderMapper {
+class OrderMapper(private val orderNumberGenerator: OrderNumberGenerator) {
 
     fun toEntity(
         cart: CartEntity,
@@ -18,10 +18,19 @@ class OrderMapper {
     ): OrderEntity {
         val itemsTotal = cart.items.fold(BigDecimal.ZERO) { acc, item -> acc + itemPrice(item) }
 
+        val orderNumber = orderNumberGenerator.generate(
+            userId = cart.ownerId,
+            storeId = store.id,
+            cartId = cart.id,
+            menuItemId = cart.items.first().menuItem.id,
+            addressId = address.id,
+        )
+
         val order = OrderEntity(
             userId = cart.ownerId,
             storeId = store.id,
             storeName = store.name,
+            orderNumber = orderNumber,
             cartId = cart.id,
             deliveryAddressId = address.id,
             deliveryAddressLine = buildAddressLine(address),
@@ -72,6 +81,7 @@ class OrderMapper {
         OrderResponse(
             id = order.id,
             status = order.status,
+            orderNumber = order.orderNumber,
             storeName = order.storeName,
             deliveryAddressLine = order.deliveryAddressLine,
             items = order.items.map { toItemResponse(it) },

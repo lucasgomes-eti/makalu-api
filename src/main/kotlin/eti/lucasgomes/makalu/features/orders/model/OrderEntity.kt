@@ -20,6 +20,9 @@ data class OrderEntity(
     @Column(name = "store_name", nullable = false)
     val storeName: String,
 
+    @Column(name = "order_number", nullable = false, length = 6)
+    val orderNumber: String,
+
     @Column(name = "cart_id", nullable = false)
     val cartId: Long,
 

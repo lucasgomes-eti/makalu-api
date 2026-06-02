@@ -8,6 +8,9 @@ data class OrderResponse(
     val id: Long,
     val status: OrderStatus,
 
+    @JsonProperty("order_number")
+    val orderNumber: String,
+
     @JsonProperty("store_name")
     val storeName: String,
 
