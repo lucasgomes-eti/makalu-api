@@ -2,6 +2,9 @@ package eti.lucasgomes.makalu.features.orders
 
 import eti.lucasgomes.makalu.features.address.AddressRepository
 import eti.lucasgomes.makalu.features.cart.CartRepository
+import eti.lucasgomes.makalu.features.orders.model.CreateOrderRequest
+import eti.lucasgomes.makalu.features.orders.model.OrderError
+import eti.lucasgomes.makalu.features.orders.model.OrderSimpleResponse
 import eti.lucasgomes.makalu.features.stores.StoreRepository
 import eti.lucasgomes.makalu.shared.exceptions.BadRequestException
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
@@ -18,7 +21,7 @@ class OrderService(
 ) {
 
     @Transactional
-    fun createOrder(userId: Long, request: CreateOrderRequest): OrderResponse {
+    fun createOrder(userId: Long, request: CreateOrderRequest): OrderSimpleResponse {
         val store = storeRepository.findById(request.storeId!!)
             .orElseThrow { NotFoundException(OrderError.StoreNotFound) }
 
@@ -36,6 +39,6 @@ class OrderService(
 
         val order = orderRepository.save(orderMapper.toEntity(cart, store, address))
         cartRepository.delete(cart)
-        return orderMapper.toResponse(order)
+        return orderMapper.toSimpleResponse(order)
     }
 }

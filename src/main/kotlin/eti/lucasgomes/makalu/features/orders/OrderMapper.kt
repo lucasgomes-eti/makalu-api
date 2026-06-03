@@ -77,19 +77,37 @@ class OrderMapper(private val orderNumberGenerator: OrderNumberGenerator) {
         return order
     }
 
-    fun toResponse(order: OrderEntity): OrderResponse =
-        OrderResponse(
+    fun toDetailedResponse(order: OrderEntity): OrderDetailedResponse =
+        OrderDetailedResponse(
             id = order.id,
             status = order.status,
             orderNumber = order.orderNumber,
             storeName = order.storeName,
             deliveryAddressLine = order.deliveryAddressLine,
             items = order.items.map { toItemResponse(it) },
-            total = OrderResponse.Total(
+            total = OrderDetailedResponse.Total(
                 deliveryFee = order.deliveryFee,
                 total = order.totalPrice
             ),
-            createdAt = order.createdAt.toString()
+            createdAt = order.createdAt.toString(),
+            updatedAt = order.updatedAt.toString()
+        )
+
+
+    fun toSimpleResponse(order: OrderEntity): OrderSimpleResponse =
+        OrderSimpleResponse(
+            id = order.id,
+            status = order.status,
+            orderNumber = order.orderNumber,
+            storeName = order.storeName,
+            deliveryAddressLine = order.deliveryAddressLine,
+            itemsCount = order.items.size,
+            total = OrderSimpleResponse.Total(
+                deliveryFee = order.deliveryFee,
+                total = order.totalPrice
+            ),
+            createdAt = order.createdAt.toString(),
+            updatedAt = order.updatedAt.toString()
         )
 
     private fun itemPrice(item: CartItemEntity): BigDecimal {
@@ -99,14 +117,14 @@ class OrderMapper(private val orderNumberGenerator: OrderNumberGenerator) {
         return item.menuItem.price + configurationsExtra
     }
 
-    private fun toItemResponse(item: OrderItemEntity): OrderResponse.OrderItemResponse {
+    private fun toItemResponse(item: OrderItemEntity): OrderDetailedResponse.OrderItemResponse {
         val configurationsExtra = item.configurations
             .flatMap { it.options }
             .fold(BigDecimal.ZERO) { acc, option ->
                 acc + (option.additionalPrice * option.quantity.toBigDecimal())
             }
 
-        return OrderResponse.OrderItemResponse(
+        return OrderDetailedResponse.OrderItemResponse(
             id = item.id,
             menuItemId = item.menuItemId,
             imageId = item.imageId,
@@ -114,11 +132,11 @@ class OrderMapper(private val orderNumberGenerator: OrderNumberGenerator) {
             price = item.price + configurationsExtra,
             notes = item.notes,
             configurations = item.configurations.map { configuration ->
-                OrderResponse.OrderItemResponse.Configuration(
+                OrderDetailedResponse.OrderItemResponse.Configuration(
                     id = configuration.id,
                     name = configuration.name,
                     options = configuration.options.map { option ->
-                        OrderResponse.OrderItemResponse.Configuration.Option(
+                        OrderDetailedResponse.OrderItemResponse.Configuration.Option(
                             id = option.id,
                             name = option.name,
                             additionalPrice = option.additionalPrice,

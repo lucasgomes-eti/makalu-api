@@ -1,10 +1,9 @@
-package eti.lucasgomes.makalu.features.orders
+package eti.lucasgomes.makalu.features.orders.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import eti.lucasgomes.makalu.features.orders.model.OrderStatus
 import java.math.BigDecimal
 
-data class OrderResponse(
+data class OrderDetailedResponse(
     val id: Long,
     val status: OrderStatus,
 
@@ -21,7 +20,10 @@ data class OrderResponse(
     val total: Total,
 
     @JsonProperty("created_at")
-    val createdAt: String
+    val createdAt: String,
+
+    @JsonProperty("updated_at")
+    val updatedAt: String
 ) {
     data class OrderItemResponse(
         val id: Long,

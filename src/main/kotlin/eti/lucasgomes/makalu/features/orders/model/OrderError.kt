@@ -1,4 +1,4 @@
-package eti.lucasgomes.makalu.features.orders
+package eti.lucasgomes.makalu.features.orders.model
 
 import eti.lucasgomes.makalu.shared.MakaluError
 
