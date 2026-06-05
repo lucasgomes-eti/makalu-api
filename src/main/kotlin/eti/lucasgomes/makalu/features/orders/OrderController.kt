@@ -15,4 +15,8 @@ class OrderController(private val orderService: OrderService) {
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@Valid @RequestBody request: CreateOrderRequest): OrderSimpleResponse =
         orderService.createOrder(userId = authenticatedUser.id, request = request)
+
+    @GetMapping
+    fun list(): List<OrderSimpleResponse> =
+        orderService.getOrders(userId = authenticatedUser.id)
 }

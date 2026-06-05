@@ -41,4 +41,9 @@ class OrderService(
         cartRepository.delete(cart)
         return orderMapper.toSimpleResponse(order)
     }
+
+    @Transactional(readOnly = true)
+    fun getOrders(userId: Long): List<OrderSimpleResponse> =
+        orderRepository.findByUserIdOrderByCreatedAtDesc(userId)
+            .map(orderMapper::toSimpleResponse)
 }
