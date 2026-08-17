@@ -44,6 +44,5 @@ class OrderService(
 
     @Transactional(readOnly = true)
     fun getOrders(userId: Long): List<OrderSimpleResponse> =
-        orderRepository.findByUserIdOrderByCreatedAtDesc(userId)
-            .map(orderMapper::toSimpleResponse)
+        orderMapper.toSimpleResponse(orderRepository.findByUserIdOrderByCreatedAtDesc(userId))
 }

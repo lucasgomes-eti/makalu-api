@@ -4,12 +4,16 @@ import eti.lucasgomes.makalu.features.address.AddressEntity
 import eti.lucasgomes.makalu.features.cart.model.CartEntity
 import eti.lucasgomes.makalu.features.cart.model.CartItemEntity
 import eti.lucasgomes.makalu.features.orders.model.*
+import eti.lucasgomes.makalu.features.stores.StoreRepository
 import eti.lucasgomes.makalu.features.stores.model.StoreEntity
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
 @Component
-class OrderMapper(private val orderNumberGenerator: OrderNumberGenerator) {
+class OrderMapper(
+    private val orderNumberGenerator: OrderNumberGenerator,
+    private val storeRepository: StoreRepository
+) {
 
     fun toEntity(
         cart: CartEntity,
@@ -95,11 +99,22 @@ class OrderMapper(private val orderNumberGenerator: OrderNumberGenerator) {
 
 
     fun toSimpleResponse(order: OrderEntity): OrderSimpleResponse =
+        toSimpleResponse(order, storeRepository.findById(order.storeId).orElse(null)?.logoImageId)
+
+    fun toSimpleResponse(orders: List<OrderEntity>): List<OrderSimpleResponse> {
+        val logoImageIdByStoreId = storeRepository.findAllById(orders.map { it.storeId }.distinct())
+            .associate { it.id to it.logoImageId }
+
+        return orders.map { toSimpleResponse(it, logoImageIdByStoreId[it.storeId]) }
+    }
+
+    private fun toSimpleResponse(order: OrderEntity, storeImageId: Long?): OrderSimpleResponse =
         OrderSimpleResponse(
             id = order.id,
             status = order.status,
             orderNumber = order.orderNumber,
             storeName = order.storeName,
+            storeImageId = storeImageId,
             deliveryAddressLine = order.deliveryAddressLine,
             itemsCount = order.items.size,
             total = OrderSimpleResponse.Total(
