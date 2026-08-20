@@ -13,6 +13,9 @@ data class OrderDetailedResponse(
     @JsonProperty("store_name")
     val storeName: String,
 
+    @JsonProperty("store_image_id")
+    val storeImageId: Long?,
+
     @JsonProperty("delivery_address_line")
     val deliveryAddressLine: String,
 

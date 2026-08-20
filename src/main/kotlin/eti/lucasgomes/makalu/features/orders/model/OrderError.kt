@@ -7,4 +7,5 @@ object OrderError {
     data object CartNotFound : MakaluError("MK-702", "Cart not found")
     data object EmptyCart : MakaluError("MK-703", "Cart is empty")
     data object DeliveryAddressRequired : MakaluError("MK-704", "Delivery address required")
+    data object OrderNotFound : MakaluError("MK-705", "Order not found")
 }

@@ -2,6 +2,7 @@ package eti.lucasgomes.makalu.features.orders
 
 import eti.lucasgomes.makalu.authenticatedUser
 import eti.lucasgomes.makalu.features.orders.model.CreateOrderRequest
+import eti.lucasgomes.makalu.features.orders.model.OrderDetailedResponse
 import eti.lucasgomes.makalu.features.orders.model.OrderSimpleResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -19,4 +20,8 @@ class OrderController(private val orderService: OrderService) {
     @GetMapping
     fun list(): List<OrderSimpleResponse> =
         orderService.getOrders(userId = authenticatedUser.id)
+
+    @GetMapping("/{orderId}")
+    fun getById(@PathVariable orderId: Long): OrderDetailedResponse =
+        orderService.getOrder(userId = authenticatedUser.id, orderId = orderId)
 }

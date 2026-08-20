@@ -87,6 +87,7 @@ class OrderMapper(
             status = order.status,
             orderNumber = order.orderNumber,
             storeName = order.storeName,
+            storeImageId = storeRepository.findById(order.storeId).orElse(null)?.logoImageId,
             deliveryAddressLine = order.deliveryAddressLine,
             items = order.items.map { toItemResponse(it) },
             total = OrderDetailedResponse.Total(

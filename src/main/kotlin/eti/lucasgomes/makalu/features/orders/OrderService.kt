@@ -3,6 +3,7 @@ package eti.lucasgomes.makalu.features.orders
 import eti.lucasgomes.makalu.features.address.AddressRepository
 import eti.lucasgomes.makalu.features.cart.CartRepository
 import eti.lucasgomes.makalu.features.orders.model.CreateOrderRequest
+import eti.lucasgomes.makalu.features.orders.model.OrderDetailedResponse
 import eti.lucasgomes.makalu.features.orders.model.OrderError
 import eti.lucasgomes.makalu.features.orders.model.OrderSimpleResponse
 import eti.lucasgomes.makalu.features.stores.StoreRepository
@@ -45,4 +46,11 @@ class OrderService(
     @Transactional(readOnly = true)
     fun getOrders(userId: Long): List<OrderSimpleResponse> =
         orderMapper.toSimpleResponse(orderRepository.findByUserIdOrderByCreatedAtDesc(userId))
+
+    @Transactional(readOnly = true)
+    fun getOrder(userId: Long, orderId: Long): OrderDetailedResponse {
+        val order = orderRepository.findByIdAndUserId(orderId, userId)
+            ?: throw NotFoundException(OrderError.OrderNotFound)
+        return orderMapper.toDetailedResponse(order)
+    }
 }

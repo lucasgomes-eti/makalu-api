@@ -1,6 +1,7 @@
 package eti.lucasgomes.makalu.shared
 
 import eti.lucasgomes.makalu.shared.exceptions.AuthErrorException
+import eti.lucasgomes.makalu.shared.exceptions.BadRequestException
 import eti.lucasgomes.makalu.shared.exceptions.InternalErrorException
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
 import org.springframework.http.HttpStatus
@@ -55,6 +56,19 @@ class ExceptionControllerAdvice {
             fieldErrors = exception.mkError.fieldErrors
         )
         return ResponseEntity(error, HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(BadRequestException::class)
+    fun handleBadRequestException(
+        exception: BadRequestException
+    ): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            httpCode = HttpStatus.BAD_REQUEST.value(),
+            message = exception.mkError.message,
+            internalCode = exception.mkError.code,
+            fieldErrors = exception.mkError.fieldErrors
+        )
+        return ResponseEntity(error, HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
