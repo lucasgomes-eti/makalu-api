@@ -82,12 +82,22 @@ class OrderMapper(
     }
 
     fun toDetailedResponse(order: OrderEntity): OrderDetailedResponse =
+        toDetailedResponse(order, storeRepository.findById(order.storeId).orElse(null)?.logoImageId)
+
+    fun toDetailedResponse(orders: List<OrderEntity>): List<OrderDetailedResponse> {
+        val logoImageIdByStoreId = storeRepository.findAllById(orders.map { it.storeId }.distinct())
+            .associate { it.id to it.logoImageId }
+
+        return orders.map { toDetailedResponse(it, logoImageIdByStoreId[it.storeId]) }
+    }
+
+    private fun toDetailedResponse(order: OrderEntity, storeImageId: Long?): OrderDetailedResponse =
         OrderDetailedResponse(
             id = order.id,
             status = order.status,
             orderNumber = order.orderNumber,
             storeName = order.storeName,
-            storeImageId = storeRepository.findById(order.storeId).orElse(null)?.logoImageId,
+            storeImageId = storeImageId,
             deliveryAddressLine = order.deliveryAddressLine,
             items = order.items.map { toItemResponse(it) },
             total = OrderDetailedResponse.Total(

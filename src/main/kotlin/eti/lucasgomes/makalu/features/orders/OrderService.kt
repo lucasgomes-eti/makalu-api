@@ -53,4 +53,12 @@ class OrderService(
             ?: throw NotFoundException(OrderError.OrderNotFound)
         return orderMapper.toDetailedResponse(order)
     }
+
+    @Transactional(readOnly = true)
+    fun getOrdersByStore(storeId: Long): List<OrderDetailedResponse> {
+        if (!storeRepository.existsById(storeId)) {
+            throw NotFoundException(OrderError.StoreNotFound)
+        }
+        return orderMapper.toDetailedResponse(orderRepository.findByStoreIdOrderByCreatedAtDesc(storeId))
+    }
 }

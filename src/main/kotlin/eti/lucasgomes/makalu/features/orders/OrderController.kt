@@ -24,4 +24,8 @@ class OrderController(private val orderService: OrderService) {
     @GetMapping("/{orderId}")
     fun getById(@PathVariable orderId: Long): OrderDetailedResponse =
         orderService.getOrder(userId = authenticatedUser.id, orderId = orderId)
+
+    @GetMapping("/stores/{storeId}")
+    fun listByStore(@PathVariable storeId: Long): List<OrderDetailedResponse> =
+        orderService.getOrdersByStore(storeId = storeId)
 }
