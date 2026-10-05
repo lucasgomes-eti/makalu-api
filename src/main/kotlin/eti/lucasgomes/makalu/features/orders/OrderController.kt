@@ -4,6 +4,7 @@ import eti.lucasgomes.makalu.authenticatedUser
 import eti.lucasgomes.makalu.features.orders.model.CreateOrderRequest
 import eti.lucasgomes.makalu.features.orders.model.OrderDetailedResponse
 import eti.lucasgomes.makalu.features.orders.model.OrderSimpleResponse
+import eti.lucasgomes.makalu.features.orders.model.UpdateOrderStatusRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -28,4 +29,11 @@ class OrderController(private val orderService: OrderService) {
     @GetMapping("/stores/{storeId}")
     fun listByStore(@PathVariable storeId: Long): List<OrderDetailedResponse> =
         orderService.getOrdersByStore(storeId = storeId)
+
+    @PatchMapping("/{orderId}/status")
+    fun updateStatus(
+        @PathVariable orderId: Long,
+        @Valid @RequestBody request: UpdateOrderStatusRequest
+    ): OrderDetailedResponse =
+        orderService.updateOrderStatus(orderId = orderId, newStatus = request.status!!)
 }

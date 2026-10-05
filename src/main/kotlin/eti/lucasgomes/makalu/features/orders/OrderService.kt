@@ -6,11 +6,13 @@ import eti.lucasgomes.makalu.features.orders.model.CreateOrderRequest
 import eti.lucasgomes.makalu.features.orders.model.OrderDetailedResponse
 import eti.lucasgomes.makalu.features.orders.model.OrderError
 import eti.lucasgomes.makalu.features.orders.model.OrderSimpleResponse
+import eti.lucasgomes.makalu.features.orders.model.OrderStatus
 import eti.lucasgomes.makalu.features.stores.StoreRepository
 import eti.lucasgomes.makalu.shared.exceptions.BadRequestException
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.time.Clock
 
 @Service
 class OrderService(
@@ -60,5 +62,16 @@ class OrderService(
             throw NotFoundException(OrderError.StoreNotFound)
         }
         return orderMapper.toDetailedResponse(orderRepository.findByStoreIdOrderByCreatedAtDesc(storeId))
+    }
+
+    @Transactional
+    fun updateOrderStatus(orderId: Long, newStatus: OrderStatus): OrderDetailedResponse {
+        val order = orderRepository.findById(orderId)
+            .orElseThrow { NotFoundException(OrderError.OrderNotFound) }
+        if (!order.status.canTransitionTo(newStatus)) {
+            throw BadRequestException(OrderError.InvalidStatusTransition)
+        }
+        val updatedOrder = orderRepository.save(order.copy(status = newStatus, updatedAt = Clock.System.now()))
+        return orderMapper.toDetailedResponse(updatedOrder)
     }
 }

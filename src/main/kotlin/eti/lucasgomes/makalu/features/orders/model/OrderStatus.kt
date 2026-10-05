@@ -5,5 +5,15 @@ enum class OrderStatus {
     ACCEPTED,
     CANCELLED,
     IN_ROUTE,
-    FINISHED,
+    FINISHED;
+
+    val nextStatuses: Set<OrderStatus>
+        get() = when (this) {
+            PENDING -> setOf(ACCEPTED, CANCELLED)
+            ACCEPTED -> setOf(IN_ROUTE, CANCELLED)
+            IN_ROUTE -> setOf(FINISHED, CANCELLED)
+            CANCELLED, FINISHED -> emptySet()
+        }
+
+    fun canTransitionTo(next: OrderStatus): Boolean = next in nextStatuses
 }
