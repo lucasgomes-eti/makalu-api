@@ -7,9 +7,12 @@ import eti.lucasgomes.makalu.features.orders.model.OrderDetailedResponse
 import eti.lucasgomes.makalu.features.orders.model.OrderError
 import eti.lucasgomes.makalu.features.orders.model.OrderSimpleResponse
 import eti.lucasgomes.makalu.features.orders.model.OrderStatus
+import eti.lucasgomes.makalu.features.realtime.model.OrderChangedEvent
+import eti.lucasgomes.makalu.features.realtime.model.OrderRealtimeEvent
 import eti.lucasgomes.makalu.features.stores.StoreRepository
 import eti.lucasgomes.makalu.shared.exceptions.BadRequestException
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.time.Clock
@@ -20,7 +23,8 @@ class OrderService(
     private val cartRepository: CartRepository,
     private val storeRepository: StoreRepository,
     private val addressRepository: AddressRepository,
-    private val orderMapper: OrderMapper
+    private val orderMapper: OrderMapper,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional
@@ -42,6 +46,7 @@ class OrderService(
 
         val order = orderRepository.save(orderMapper.toEntity(cart, store, address))
         cartRepository.delete(cart)
+        applicationEventPublisher.publishEvent(OrderChangedEvent(this, OrderRealtimeEvent.TYPE_CREATED, order))
         return orderMapper.toSimpleResponse(order)
     }
 
@@ -72,6 +77,9 @@ class OrderService(
             throw BadRequestException(OrderError.InvalidStatusTransition)
         }
         val updatedOrder = orderRepository.save(order.copy(status = newStatus, updatedAt = Clock.System.now()))
+        applicationEventPublisher.publishEvent(
+            OrderChangedEvent(this, OrderRealtimeEvent.TYPE_STATUS_CHANGED, updatedOrder)
+        )
         return orderMapper.toDetailedResponse(updatedOrder)
     }
 }
