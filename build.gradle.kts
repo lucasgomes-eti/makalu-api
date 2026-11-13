@@ -42,6 +42,14 @@ dependencies {
     implementation("org.locationtech.jts:jts-core:1.16.1")
     implementation("org.hibernate.orm:hibernate-spatial:7.2.6.Final")
     implementation("io.github.mysto:ff3:1.0")
+    implementation("com.hivemq:hivemq-mqtt-client:1.3.6")
+    implementation("org.springframework.boot:spring-boot-starter-micrometer-metrics")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
+    // Only the integration test speaks MQTT over WebSocket, as the web and Android apps do.
+    // HiveMQ marks this optional and hangs on connect without it.
+    testImplementation("io.netty:netty-codec-http")
 }
 
 kotlin {
