@@ -1,0 +1,16 @@
+# Local development services for the Makalu API.
+#
+# Emitter needs a license to start. Generate a license + secret key pair once and keep
+# both in an untracked .env file next to this one (see .env.example and docs/realtime.md).
+services:
+  emitter:
+    # v3.1, pinned by digest. Bump the tag and the digest together.
+    image: emitter/server:v3.1@sha256:04f27afbddf41015a170e2f8e0e4d759fe4642cdca941e69ae49ea5b737b17ec
+    environment:
+      EMITTER_LICENSE: ${EMITTER_LICENSE:?generate one first - see .env.example}
+      EMITTER_LISTEN: ":8080"
+    ports:
+      # One port serves raw MQTT over TCP and MQTT over WebSocket (any path).
+      # Published on 8090 because the API itself listens on 8080.
+      - "127.0.0.1:8090:8080"
+    restart: unless-stopped
