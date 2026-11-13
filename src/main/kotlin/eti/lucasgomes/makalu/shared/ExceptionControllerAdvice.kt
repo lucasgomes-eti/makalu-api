@@ -4,6 +4,7 @@ import eti.lucasgomes.makalu.shared.exceptions.AuthErrorException
 import eti.lucasgomes.makalu.shared.exceptions.BadRequestException
 import eti.lucasgomes.makalu.shared.exceptions.InternalErrorException
 import eti.lucasgomes.makalu.shared.exceptions.NotFoundException
+import eti.lucasgomes.makalu.shared.exceptions.ServiceUnavailableException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -69,6 +70,19 @@ class ExceptionControllerAdvice {
             fieldErrors = exception.mkError.fieldErrors
         )
         return ResponseEntity(error, HttpStatus.BAD_REQUEST)
+    }
+
+    @ExceptionHandler(ServiceUnavailableException::class)
+    fun handleServiceUnavailableException(
+        exception: ServiceUnavailableException
+    ): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            httpCode = HttpStatus.SERVICE_UNAVAILABLE.value(),
+            message = exception.mkError.message,
+            internalCode = exception.mkError.code,
+            fieldErrors = exception.mkError.fieldErrors
+        )
+        return ResponseEntity(error, HttpStatus.SERVICE_UNAVAILABLE)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
