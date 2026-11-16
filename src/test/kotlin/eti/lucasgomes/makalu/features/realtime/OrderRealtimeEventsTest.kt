@@ -19,7 +19,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class OrderRealtimeEventsTest : IntegrationTest() {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -43,7 +42,6 @@ class OrderRealtimeEventsTest : IntegrationTest() {
 
     private data class PlacedOrder(val id: Long, val storeId: Long, val ownerToken: String)
 
-    /** Places an order through the API and returns it. */
     private fun placeOrder(): PlacedOrder {
         val owner = data.user()
         val store = data.store(owner)
@@ -93,7 +91,6 @@ class OrderRealtimeEventsTest : IntegrationTest() {
             assertEquals(order.id.toString(), event.orderId)
             assertEquals(order.storeId.toString(), event.storeId)
             assertEquals(status, event.status)
-            // The event carries the same updated_at the REST response reports.
             assertTrue(body.contains("\"updated_at\":\"${event.updatedAt}\""), "updated_at differs: $body")
         }
         assertEquals(3, gateway.published.size)

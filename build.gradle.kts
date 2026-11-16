@@ -47,8 +47,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
-    // Only the integration test speaks MQTT over WebSocket, as the web and Android apps do.
-    // HiveMQ marks this optional and hangs on connect without it.
     testImplementation("io.netty:netty-codec-http")
 }
 
