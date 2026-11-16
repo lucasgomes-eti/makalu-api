@@ -23,14 +23,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/**
- * Runs the real gateway against a real Emitter broker: key issue, subscribe, publish,
- * receive, and the things a read key must not be able to do.
- *
- * The license and secret key are generated for the run and thrown away with the container.
- */
 class EmitterRealtimeGatewayIT {
-
     companion object {
         private const val IMAGE = "emitter/server:v3.1"
         private const val BROKER_PORT = 8080
@@ -68,17 +61,19 @@ class EmitterRealtimeGatewayIT {
 
     private fun gateway(host: String, port: Int): EmitterRealtimeGateway {
         val properties = RealtimeProperties(
-            enabled = true,
-            timeout = Duration.ofSeconds(2),
-            emitter = RealtimeProperties.Emitter(host = host, port = port, secretKey = credentials.second)
+            brokerRequestTimeout = Duration.ofSeconds(2),
+            emitter = RealtimeProperties.Emitter(
+                privateHost = host,
+                privatePort = port,
+                secretKey = credentials.second
+            )
         )
         return EmitterRealtimeGateway(properties, meters).also { gateway ->
-            gateway.start()
-            opened += AutoCloseable { gateway.stop() }
+            gateway.startConnectingInBackground()
+            opened += AutoCloseable { gateway.disconnect() }
         }
     }
 
-    /** A client like the web and Android apps: MQTT 3.1.1 over WebSocket. */
     private fun webSocketClient(container: GenericContainer<*> = broker): Mqtt3BlockingClient =
         MqttClient.builder()
             .useMqttVersion3()
@@ -92,10 +87,6 @@ class EmitterRealtimeGatewayIT {
                 opened += AutoCloseable { client.disconnect() }
             }
 
-    /**
-     * Emitter delivers on `<channel>/` although the subscription was `<key>/<channel>/`, so a
-     * per-subscription callback never matches: messages have to be read from the global stream.
-     */
     private fun Mqtt3BlockingClient.collect(key: String, channel: String): MutableList<Pair<String, String>> {
         val received = CopyOnWriteArrayList<Pair<String, String>>()
         toAsync().publishes(MqttGlobalPublishFilter.ALL) {
@@ -132,14 +123,13 @@ class EmitterRealtimeGatewayIT {
         val gateway = gateway(broker.host, broker.getMappedPort(BROKER_PORT))
         await("connection") { gateway.isConnected }
 
-        val orderKey = gateway.issueReadKey(RealtimeChannels.order(42), Duration.ofHours(24))
-        val storeKey = gateway.issueReadKey(RealtimeChannels.storeOrders(7), Duration.ofHours(24))
+        val orderKey = gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.order(42), Duration.ofHours(24))
+        val storeKey = gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.storeOrders(7), Duration.ofHours(24))
         val customer = webSocketClient().collect(orderKey, RealtimeChannels.order(42))
         val store = webSocketClient().collect(storeKey, RealtimeChannels.storeOrders(7))
 
-        // The write key is fetched just after connecting; publish until it is in place.
         await("delivery") {
-            gateway.publish(event(orderId = 42, storeId = 7))
+            gateway.publishWithoutBlockingOrThrowing(event(orderId = 42, storeId = 7))
             customer.isNotEmpty() && store.isNotEmpty()
         }
 
@@ -154,14 +144,14 @@ class EmitterRealtimeGatewayIT {
         val gateway = gateway(broker.host, broker.getMappedPort(BROKER_PORT))
         await("connection") { gateway.isConnected }
         val mine = webSocketClient().collect(
-            gateway.issueReadKey(RealtimeChannels.order(100), Duration.ofHours(1)), RealtimeChannels.order(100)
+            gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.order(100), Duration.ofHours(1)), RealtimeChannels.order(100)
         )
         val probe = webSocketClient().collect(
-            gateway.issueReadKey(RealtimeChannels.order(101), Duration.ofHours(1)), RealtimeChannels.order(101)
+            gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.order(101), Duration.ofHours(1)), RealtimeChannels.order(101)
         )
 
         await("delivery") {
-            gateway.publish(event(orderId = 101, storeId = 8))
+            gateway.publishWithoutBlockingOrThrowing(event(orderId = 101, storeId = 8))
             probe.isNotEmpty()
         }
 
@@ -172,7 +162,7 @@ class EmitterRealtimeGatewayIT {
     fun `a read key is scoped to exactly its channel`() {
         val gateway = gateway(broker.host, broker.getMappedPort(BROKER_PORT))
         await("connection") { gateway.isConnected }
-        val key = gateway.issueReadKey(RealtimeChannels.order(200), Duration.ofHours(1))
+        val key = gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.order(200), Duration.ofHours(1))
         val client = webSocketClient()
 
         listOf("makalu/order/201/", "makalu/order/+/", "makalu/order/200/extra/", "makalu/store/7/orders/")
@@ -187,14 +177,13 @@ class EmitterRealtimeGatewayIT {
     fun `a read key cannot publish`() {
         val gateway = gateway(broker.host, broker.getMappedPort(BROKER_PORT))
         await("connection") { gateway.isConnected }
-        val key = gateway.issueReadKey(RealtimeChannels.order(300), Duration.ofHours(1))
+        val key = gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.order(300), Duration.ofHours(1))
         val listener = webSocketClient().collect(key, RealtimeChannels.order(300))
         val attacker = webSocketClient()
 
         attacker.publishWith().topic("$key/${RealtimeChannels.order(300)}").payload("forged".toByteArray()).send()
-        // A legitimate event sent afterwards proves the channel works and the forged one was dropped.
         await("delivery") {
-            gateway.publish(event(orderId = 300, storeId = 9))
+            gateway.publishWithoutBlockingOrThrowing(event(orderId = 300, storeId = 9))
             listener.isNotEmpty()
         }
 
@@ -207,12 +196,12 @@ class EmitterRealtimeGatewayIT {
         val startedAt = System.nanoTime()
 
         val gateway = gateway("localhost", closedPort)
-        gateway.publish(event(orderId = 1, storeId = 1))
+        gateway.publishWithoutBlockingOrThrowing(event(orderId = 1, storeId = 1))
 
         assertTrue(Duration.ofNanos(System.nanoTime() - startedAt) < Duration.ofSeconds(1), "start or publish blocked")
         assertFalse(gateway.isConnected)
         assertEquals(1.0, failures())
-        assertThrows<RealtimeUnavailableException> { gateway.issueReadKey(RealtimeChannels.order(1), Duration.ofHours(1)) }
+        assertThrows<RealtimeUnavailableException> { gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.order(1), Duration.ofHours(1)) }
     }
 
     @Test
@@ -228,10 +217,10 @@ class EmitterRealtimeGatewayIT {
         opened += AutoCloseable { lateBroker.stop() }
 
         await("reconnection", Duration.ofSeconds(60)) { gateway.isConnected }
-        val key = gateway.issueReadKey(RealtimeChannels.order(400), Duration.ofHours(1))
+        val key = gateway.issueReadOnlyKeyForExactChannel(RealtimeChannels.order(400), Duration.ofHours(1))
         val listener = webSocketClient(lateBroker).collect(key, RealtimeChannels.order(400))
         await("delivery") {
-            gateway.publish(event(orderId = 400, storeId = 4))
+            gateway.publishWithoutBlockingOrThrowing(event(orderId = 400, storeId = 4))
             listener.isNotEmpty()
         }
     }

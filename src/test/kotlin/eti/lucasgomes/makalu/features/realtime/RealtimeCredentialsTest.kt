@@ -4,6 +4,7 @@ import eti.lucasgomes.makalu.features.orders.OrderRepository
 import eti.lucasgomes.makalu.features.orders.model.OrderEntity
 import eti.lucasgomes.makalu.features.orders.model.OrderStatus
 import eti.lucasgomes.makalu.support.IntegrationTest
+import eti.lucasgomes.makalu.support.IntegrationTest.Companion.TEST_BROKER_PUBLIC_URL
 import eti.lucasgomes.makalu.support.RecordingRealtimeGateway
 import eti.lucasgomes.makalu.support.TestData
 import org.junit.jupiter.api.BeforeEach
@@ -18,7 +19,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class RealtimeCredentialsTest : IntegrationTest() {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -59,7 +59,7 @@ class RealtimeCredentialsTest : IntegrationTest() {
             .andExpect {
                 status { isOk() }
                 header { string("Cache-Control", "no-store") }
-                jsonPath("$.url") { value("ws://localhost:8090/") }
+                jsonPath("$.url") { value(TEST_BROKER_PUBLIC_URL) }
                 jsonPath("$.channel") { value("makalu/order/${order.id}/") }
                 jsonPath("$.key") { value("key-for-makalu/order/${order.id}/") }
                 jsonPath("$.expires_at") { exists() }
@@ -69,7 +69,6 @@ class RealtimeCredentialsTest : IntegrationTest() {
                     val expiresAt = Instant.parse(
                         Regex("\"expires_at\":\"([^\"]+)\"").find(result.response.contentAsString)!!.groupValues[1]
                     )
-                    // 24 hours, the lifetime of an access token.
                     val lifetime = Duration.between(before, expiresAt)
                     assertTrue(lifetime > Duration.ofHours(23) && lifetime <= Duration.ofHours(24).plusMinutes(1))
                 }

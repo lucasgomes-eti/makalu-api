@@ -23,18 +23,15 @@ class RealtimeService(
     jwtService: JwtService
 ) {
 
-    /** A key lives as long as an access token, so both are renewed on the same rhythm. */
-    private val keyValidity = Duration.ofMillis(jwtService.accessTokenValidityMs)
+    private val keyValiditySameAsAccessToken = Duration.ofMillis(jwtService.accessTokenValidityMs)
 
-    /** Someone else's order is reported exactly like a missing one. */
-    fun credentialsForOrder(userId: Long, orderId: Long): RealtimeCredentialsResponse {
+    fun credentialsForOrderPlacedByUser(userId: Long, orderId: Long): RealtimeCredentialsResponse {
         orderRepository.findByIdAndUserId(orderId, userId)
             ?: throw NotFoundException(OrderError.OrderNotFound)
         return credentialsFor(RealtimeChannels.order(orderId))
     }
 
-    /** Someone else's store is reported exactly like a missing one. */
-    fun credentialsForStore(userId: Long, storeId: Long): RealtimeCredentialsResponse {
+    fun credentialsForStoreOwnedByUser(userId: Long, storeId: Long): RealtimeCredentialsResponse {
         val store = storeRepository.findById(storeId).orElse(null)
         if (store == null || store.ownerUserId != userId) {
             throw NotFoundException(StoreError.StoreNotFound)
@@ -44,7 +41,7 @@ class RealtimeService(
 
     private fun credentialsFor(channel: String): RealtimeCredentialsResponse {
         val key = try {
-            realtimeGateway.issueReadKey(channel, keyValidity)
+            realtimeGateway.issueReadOnlyKeyForExactChannel(channel, keyValiditySameAsAccessToken)
         } catch (exception: RealtimeUnavailableException) {
             throw ServiceUnavailableException(RealtimeError.Unavailable, exception)
         }
@@ -52,7 +49,7 @@ class RealtimeService(
             url = properties.emitter.publicUrl,
             channel = channel,
             key = key,
-            expiresAt = Instant.now().plus(keyValidity).truncatedTo(ChronoUnit.SECONDS).toString()
+            expiresAt = Instant.now().plus(keyValiditySameAsAccessToken).truncatedTo(ChronoUnit.SECONDS).toString()
         )
     }
 }

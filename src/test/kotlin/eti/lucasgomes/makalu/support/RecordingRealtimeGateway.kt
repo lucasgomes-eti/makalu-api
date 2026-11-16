@@ -6,9 +6,7 @@ import eti.lucasgomes.makalu.features.realtime.model.OrderRealtimeEvent
 import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 
-/** Stands in for the broker: records what would have been sent. */
 class RecordingRealtimeGateway : RealtimeGateway {
-
     val published = CopyOnWriteArrayList<OrderRealtimeEvent>()
     val issuedKeys = CopyOnWriteArrayList<Pair<String, Duration>>()
 
@@ -21,13 +19,13 @@ class RecordingRealtimeGateway : RealtimeGateway {
     override val isConnected: Boolean
         get() = available
 
-    override fun issueReadKey(channel: String, ttl: Duration): String {
+    override fun issueReadOnlyKeyForExactChannel(channel: String, validity: Duration): String {
         if (!available) throw RealtimeUnavailableException("broker down")
-        issuedKeys += channel to ttl
+        issuedKeys += channel to validity
         return "key-for-$channel"
     }
 
-    override fun publish(event: OrderRealtimeEvent) {
+    override fun publishWithoutBlockingOrThrowing(event: OrderRealtimeEvent) {
         if (failOnPublish) throw IllegalStateException("broker down")
         published += event
     }

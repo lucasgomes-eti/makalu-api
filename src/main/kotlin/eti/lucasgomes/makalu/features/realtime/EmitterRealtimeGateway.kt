@@ -16,7 +16,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.UUID
@@ -25,17 +24,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
-/**
- * Talks to a self-hosted Emitter broker over MQTT 3.1.1 (plain TCP, private network).
- *
- * Emitter specifics this class relies on, all checked against a real broker:
- * - a topic is `<key>/<channel>/`;
- * - a key is requested by publishing to `emitter/keygen/`, and the answer arrives on the
- *   same connection, on that same topic, without a subscription;
- * - a refused publish is not reported by MQTT itself, only by a message on `emitter/error/`.
- */
 @Component
-@ConditionalOnProperty(prefix = "realtime", name = ["enabled"], havingValue = "true")
 class EmitterRealtimeGateway(
     private val properties: RealtimeProperties,
     meterRegistry: MeterRegistry
@@ -43,42 +32,43 @@ class EmitterRealtimeGateway(
 
     private val logger = LoggerFactory.getLogger(javaClass)
     private val mapper = jacksonObjectMapper()
-    private val timeoutMs = properties.timeout.toMillis()
+    private val brokerRequestTimeoutMs = properties.brokerRequestTimeout.toMillis()
 
     private val publishFailures: Counter = Counter.builder(PUBLISH_FAILURES_METRIC)
         .description("Order events that could not be handed to the broker")
         .register(meterRegistry)
 
-    /** Runs key requests off the MQTT client's own threads, which must never block. */
-    private val worker = Executors.newSingleThreadExecutor { runnable ->
+    private val keyRequestThreadOffTheMqttEventLoop = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "realtime-keygen").apply { isDaemon = true }
     }
 
-    /** Emitter answers key requests in order and an error carries no channel: one at a time. */
-    private val keygenLock = ReentrantLock()
+    private val oneKeyRequestAtATime = ReentrantLock()
 
     @Volatile
-    private var pendingKeygen: CompletableFuture<KeygenResponse>? = null
+    private var keyRequestAwaitingBrokerAnswer: CompletableFuture<KeygenResponse>? = null
 
-    /** The API's own key for publishing. Requested again after every (re)connect. */
     @Volatile
-    private var writeKey: String? = null
+    private var writeKeyOfCurrentConnection: String? = null
 
     private val client: Mqtt3AsyncClient = MqttClient.builder()
         .useMqttVersion3()
         .identifier("makalu-api-${UUID.randomUUID()}")
-        .serverHost(properties.emitter.host)
-        .serverPort(properties.emitter.port)
+        .serverHost(properties.emitter.privateHost)
+        .serverPort(properties.emitter.privatePort)
         .automaticReconnect()
         .initialDelay(RECONNECT_INITIAL_DELAY_SECONDS, TimeUnit.SECONDS)
         .maxDelay(RECONNECT_MAX_DELAY_SECONDS, TimeUnit.SECONDS)
         .applyAutomaticReconnect()
         .addConnectedListener {
-            logger.info("Connected to the realtime broker at {}:{}", properties.emitter.host, properties.emitter.port)
-            worker.execute(::refreshWriteKey)
+            logger.info(
+                "Connected to the realtime broker at {}:{}",
+                properties.emitter.privateHost,
+                properties.emitter.privatePort
+            )
+            keyRequestThreadOffTheMqttEventLoop.execute(::requestWriteKeyForNewConnection)
         }
         .addDisconnectedListener { context ->
-            writeKey = null
+            writeKeyOfCurrentConnection = null
             if (context.source == MqttDisconnectSource.USER) {
                 logger.info("Disconnected from the realtime broker")
             } else {
@@ -96,10 +86,9 @@ class EmitterRealtimeGateway(
     override val isConnected: Boolean
         get() = client.state.isConnected
 
-    /** Starts connecting and returns at once; the client keeps retrying on its own. */
     @PostConstruct
-    fun start() {
-        client.publishes(MqttGlobalPublishFilter.ALL, ::onBrokerMessage)
+    fun startConnectingInBackground() {
+        client.publishes(MqttGlobalPublishFilter.ALL, ::onUnsolicitedBrokerMessage)
         client.connectWith()
             .cleanSession(true)
             .keepAlive(KEEP_ALIVE_SECONDS)
@@ -112,21 +101,21 @@ class EmitterRealtimeGateway(
     }
 
     @PreDestroy
-    fun stop() {
-        worker.shutdownNow()
+    fun disconnect() {
+        keyRequestThreadOffTheMqttEventLoop.shutdownNow()
         if (client.state.isConnectedOrReconnect) {
             client.disconnect()
         }
     }
 
-    override fun issueReadKey(channel: String, ttl: Duration): String =
-        requestKey(channel, type = "r", ttlSeconds = ttl.seconds)
+    override fun issueReadOnlyKeyForExactChannel(channel: String, validity: Duration): String =
+        requestKeyFromBroker(channel, permissions = READ_ONLY, validitySeconds = validity.seconds)
 
-    override fun publish(event: OrderRealtimeEvent) {
+    override fun publishWithoutBlockingOrThrowing(event: OrderRealtimeEvent) {
         try {
-            val key = writeKey
-            if (!isConnected || key == null) {
-                onPublishFailure(event, "not connected to the broker")
+            val writeKey = writeKeyOfCurrentConnection
+            if (!isConnected || writeKey == null) {
+                countAndLogPublishFailure(event, "not connected to the broker")
                 return
             }
             val payload = mapper.writeValueAsBytes(event)
@@ -136,56 +125,58 @@ class EmitterRealtimeGateway(
             )
             channels.forEach { channel ->
                 client.publishWith()
-                    .topic("$key/$channel")
+                    .topic("$writeKey/$channel")
                     .qos(MqttQos.AT_MOST_ONCE)
                     .payload(payload)
                     .send()
-                    .orTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+                    .orTimeout(brokerRequestTimeoutMs, TimeUnit.MILLISECONDS)
                     .whenComplete { _, error ->
-                        if (error != null) onPublishFailure(event, "$channel: ${error.javaClass.simpleName}")
+                        if (error != null) countAndLogPublishFailure(event, "$channel: ${error.javaClass.simpleName}")
                     }
             }
         } catch (exception: Exception) {
-            onPublishFailure(event, exception.javaClass.simpleName)
+            countAndLogPublishFailure(event, exception.javaClass.simpleName)
         }
     }
 
-    private fun onPublishFailure(event: OrderRealtimeEvent, reason: String) {
+    private fun countAndLogPublishFailure(event: OrderRealtimeEvent, reason: String) {
         publishFailures.increment()
         logger.warn("Realtime event {} for order {} was not published: {}", event.type, event.orderId, reason)
     }
 
-    private fun refreshWriteKey() {
+    private fun requestWriteKeyForNewConnection() {
         try {
-            // ttl 0 never expires; the key is only ever held in memory by the API.
-            writeKey = requestKey(RealtimeChannels.ALL, type = "w", ttlSeconds = 0)
+            writeKeyOfCurrentConnection = requestKeyFromBroker(
+                RealtimeChannels.EVERY_MAKALU_CHANNEL,
+                permissions = WRITE_ONLY,
+                validitySeconds = NEVER_EXPIRES
+            )
             logger.info("Realtime publishing is ready")
         } catch (exception: RealtimeUnavailableException) {
             logger.error("Could not obtain the realtime write key: {}", exception.message)
         }
     }
 
-    private fun requestKey(channel: String, type: String, ttlSeconds: Long): String {
+    private fun requestKeyFromBroker(channel: String, permissions: String, validitySeconds: Long): String {
         if (!isConnected) throw RealtimeUnavailableException("Not connected to the broker")
-        if (!keygenLock.tryLock(timeoutMs, TimeUnit.MILLISECONDS)) {
+        if (!oneKeyRequestAtATime.tryLock(brokerRequestTimeoutMs, TimeUnit.MILLISECONDS)) {
             throw RealtimeUnavailableException("Timed out waiting for the broker")
         }
         try {
-            val pending = CompletableFuture<KeygenResponse>()
-            pendingKeygen = pending
-            // The request carries the secret key: it must never be logged.
-            val request = mapOf(
+            val brokerAnswer = CompletableFuture<KeygenResponse>()
+            keyRequestAwaitingBrokerAnswer = brokerAnswer
+            val requestContainingSecretKeyNeverToBeLogged = mapOf(
                 "key" to properties.emitter.secretKey,
                 "channel" to channel,
-                "type" to type,
-                "ttl" to ttlSeconds
+                "type" to permissions,
+                "ttl" to validitySeconds
             )
             client.publishWith()
                 .topic(KEYGEN_TOPIC)
                 .qos(MqttQos.AT_MOST_ONCE)
-                .payload(mapper.writeValueAsBytes(request))
+                .payload(mapper.writeValueAsBytes(requestContainingSecretKeyNeverToBeLogged))
                 .send()
-            val response = pending.get(timeoutMs, TimeUnit.MILLISECONDS)
+            val response = brokerAnswer.get(brokerRequestTimeoutMs, TimeUnit.MILLISECONDS)
             val key = response.key
             if (response.status != KEYGEN_OK || key.isNullOrEmpty() || response.channel != channel) {
                 throw RealtimeUnavailableException(
@@ -199,22 +190,21 @@ class EmitterRealtimeGateway(
             if (exception is InterruptedException) Thread.currentThread().interrupt()
             throw RealtimeUnavailableException("No key for $channel: ${exception.javaClass.simpleName}", exception)
         } finally {
-            pendingKeygen = null
-            keygenLock.unlock()
+            keyRequestAwaitingBrokerAnswer = null
+            oneKeyRequestAtATime.unlock()
         }
     }
 
-    private fun onBrokerMessage(publish: Mqtt3Publish) {
+    private fun onUnsolicitedBrokerMessage(publish: Mqtt3Publish) {
         when (publish.topic.toString()) {
             KEYGEN_TOPIC -> runCatching { mapper.readValue<KeygenResponse>(publish.payloadAsBytes) }
-                .onSuccess { pendingKeygen?.complete(it) }
-                .onFailure { pendingKeygen?.completeExceptionally(it) }
+                .onSuccess { keyRequestAwaitingBrokerAnswer?.complete(it) }
+                .onFailure { keyRequestAwaitingBrokerAnswer?.completeExceptionally(it) }
 
-            ERROR_TOPIC -> {
-                // Most likely a refused publish: ask for a fresh write key.
+            ERROR_TOPIC_WHERE_REFUSED_PUBLISHES_ARE_REPORTED -> {
                 publishFailures.increment()
                 logger.warn("The realtime broker reported an error: {}", String(publish.payloadAsBytes))
-                worker.execute(::refreshWriteKey)
+                keyRequestThreadOffTheMqttEventLoop.execute(::requestWriteKeyForNewConnection)
             }
         }
     }
@@ -232,8 +222,11 @@ class EmitterRealtimeGateway(
         const val CONNECTED_METRIC = "makalu.realtime.connected"
 
         private const val KEYGEN_TOPIC = "emitter/keygen/"
-        private const val ERROR_TOPIC = "emitter/error/"
+        private const val ERROR_TOPIC_WHERE_REFUSED_PUBLISHES_ARE_REPORTED = "emitter/error/"
         private const val KEYGEN_OK = 200
+        private const val READ_ONLY = "r"
+        private const val WRITE_ONLY = "w"
+        private const val NEVER_EXPIRES = 0L
         private const val KEEP_ALIVE_SECONDS = 30
         private const val RECONNECT_INITIAL_DELAY_SECONDS = 1L
         private const val RECONNECT_MAX_DELAY_SECONDS = 30L

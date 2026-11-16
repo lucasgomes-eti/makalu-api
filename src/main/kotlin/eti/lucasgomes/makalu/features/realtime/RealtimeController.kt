@@ -13,16 +13,18 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/orders")
 class RealtimeController(private val realtimeService: RealtimeService) {
 
-    /** For the customer who placed the order. */
     @GetMapping("/{orderId}/realtime")
-    fun forOrder(@PathVariable orderId: Long): ResponseEntity<RealtimeCredentialsResponse> =
-        notStored(realtimeService.credentialsForOrder(userId = authenticatedUser.id, orderId = orderId))
+    fun credentialsForCustomerOrder(@PathVariable orderId: Long): ResponseEntity<RealtimeCredentialsResponse> =
+        neverCached(
+            realtimeService.credentialsForOrderPlacedByUser(userId = authenticatedUser.id, orderId = orderId)
+        )
 
-    /** For the owner of the store. */
     @GetMapping("/stores/{storeId}/realtime")
-    fun forStore(@PathVariable storeId: Long): ResponseEntity<RealtimeCredentialsResponse> =
-        notStored(realtimeService.credentialsForStore(userId = authenticatedUser.id, storeId = storeId))
+    fun credentialsForStoreOwner(@PathVariable storeId: Long): ResponseEntity<RealtimeCredentialsResponse> =
+        neverCached(
+            realtimeService.credentialsForStoreOwnedByUser(userId = authenticatedUser.id, storeId = storeId)
+        )
 
-    private fun notStored(credentials: RealtimeCredentialsResponse) =
+    private fun neverCached(credentials: RealtimeCredentialsResponse) =
         ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(credentials)
 }

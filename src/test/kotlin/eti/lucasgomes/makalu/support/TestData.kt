@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.util.concurrent.atomic.AtomicLong
 
-/** Builds the rows an order needs. Every call creates fresh, unique data. */
 @Component
 class TestData(
     private val userRepository: UserRepository,
@@ -64,7 +63,6 @@ class TestData(
         )
     )
 
-    /** A customer with an address and a one-item cart at [store], ready to order. */
     fun cartFor(customer: UserEntity, store: StoreEntity): CartEntity {
         addressRepository.save(
             AddressEntity(
